@@ -13,6 +13,7 @@ class SlugList extends Model
         'nama',
         'slug',
         'keterangan',
+        'theme',
         'hosting_at'
     ];
 

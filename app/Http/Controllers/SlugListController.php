@@ -12,7 +12,6 @@ class SlugListController extends Controller
     {
         $query = SlugList::query();
 
-        // kalau ada input search
         if ($request->filled('search')) {
             $keyword = $request->search;
             $query->where('nama', 'like', "%{$keyword}%")
@@ -20,7 +19,6 @@ class SlugListController extends Controller
                   ->orWhere('keterangan', 'like', "%{$keyword}%");
         }
 
-        // urutkan terbaru dulu
         $slugs = $query->orderBy('id', 'desc')->get();
 
         return view('slug.index', compact('slugs'));
@@ -29,19 +27,18 @@ class SlugListController extends Controller
     // Simpan slug baru
     public function store(Request $request)
     {
-        // validasi input
         $request->validate([
             'nama' => 'required|string|max:255',
             'keterangan' => 'nullable|string|max:255',
+            'theme' => 'nullable|string|max:50', // ✅ tambahkan validasi theme
         ]);
 
-        // simpan data slug
         SlugList::create([
             'nama' => $request->nama,
             'keterangan' => $request->keterangan,
+            'theme' => $request->theme ?? 'violet', // ✅ default theme violet
         ]);
 
-        // redirect balik ke halaman slug-list
         return redirect()->route('slug.index')->with('success', 'Slug berhasil ditambahkan!');
     }
 
@@ -65,6 +62,7 @@ class SlugListController extends Controller
         $request->validate([
             'nama' => 'required|string|max:255',
             'keterangan' => 'nullable|string|max:255',
+            'theme' => 'nullable|string|max:50', // ✅ validasi tambahan
         ]);
 
         $slug = SlugList::findOrFail($id);
@@ -72,10 +70,9 @@ class SlugListController extends Controller
         $slug->update([
             'nama' => $request->nama,
             'keterangan' => $request->keterangan,
-            // hosting_at jangan diubah dulu, kita kasih opsi di tombol terpisah
+            'theme' => $request->theme ?? $slug->theme, // ✅ update theme
         ]);
 
         return redirect()->route('slug.index')->with('success', 'Slug berhasil diperbarui!');
-}
-
+    }
 }

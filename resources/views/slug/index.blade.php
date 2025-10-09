@@ -54,6 +54,18 @@
                         <input type="text" name="keterangan" class="form-control" placeholder="contoh: Undangan Ungu">
                     </div>
 
+                    <div class="col-md-4">
+                        <label class="form-label">Tema</label>
+                        <select name="theme" class="form-select">
+                            <option value="Violet">Violet</option>
+                            <option value="Sage">Sage</option>
+                            <option value="biru">Biru</option>
+                            <option value="classic">Classic</option>
+                            <option value="modern">Modern</option>
+                        </select>
+                    </div>
+
+
                     <div class="col-md-2 d-flex align-items-end">
                         <button type="submit" class="btn btn-primary w-100">Tambah</button>
                     </div>

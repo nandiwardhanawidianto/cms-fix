@@ -75,6 +75,7 @@ class HeroInvitationApiController extends Controller
             'id' => $slugData->id,
             'slug' => $slugData->slug,
             'keterangan' => $slugData->keterangan,
+            'theme' => $slugData->theme,
             'created_at' => $slugData->created_at?->toISOString(),
             'updated_at' => $slugData->updated_at?->toISOString(),
         ];
