@@ -87,6 +87,7 @@
                             <th>#</th>
                             <th>Nama</th>
                             <th>Slug</th>
+                            <th>Theme</th>
                             <th>Keterangan</th>
                             <th>Dibuat</th>
                             <th>Hosting</th>
@@ -99,6 +100,7 @@
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $slug->nama }}</td>
                                 <td><span class="badge bg-secondary">{{ $slug->slug }}</span></td>
+                                <td>{{ $slug->theme ?? '-' }}</td>
                                 <td>{{ $slug->keterangan ?? '-' }}</td>
                                 <td>{{ $slug->created_at ? $slug->created_at->format('d M Y H:i') : '-' }}</td>
                                 <td>{{ $slug->hosting_at ? $slug->hosting_at->format('d M Y H:i') : '-' }}</td>
