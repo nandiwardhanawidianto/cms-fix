@@ -1,14 +1,16 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Http\Request;
 
 use App\Models\HeroInvitation;
 use App\Models\SlugList;
-use Illuminate\Http\Request;
 use App\Models\Acara;
 use App\Models\Galeri;
 use App\Models\Lovegift;
 use App\Models\Bank;
+use App\Models\SongList;
+use App\Models\Song;
 
 class HeroInvitationController extends Controller
 {
@@ -30,14 +32,21 @@ class HeroInvitationController extends Controller
         //load masterbankcms
         $banks = Bank::all();
 
+        //load song
+        $songs = Song::all();
+        $selectedSongs = SongList::where('slug_list_id', $id)->pluck('song_id')->toArray();
+        
+
         return view('slug.edit', [
             'slug' => $slug,
-            'slug_id' => $id, // ✅ ini yang hilang
+            'slug_id' => $id, 
             'heroInvitation' => $heroInvitation,
             'acaras' => $acaras,
             'galeri' => $galeri,
             'lovegift' => $lovegift,
             'banks' =>$banks,
+            'songs' => $songs,
+            'selectedSong' => $selectedSongs,
         ]);
     }
 
