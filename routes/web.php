@@ -8,8 +8,10 @@ use App\Http\Controllers\{
     CountingController,
     GaleriController,
     LovegiftController,
-    BankController
-};
+    BankController,
+    SongController,
+    SongListController
+    };
 
 // ========== SLUG MANAGEMENT ==========
 Route::get('/', [SlugListController::class, 'index'])->name('slug.index');
@@ -38,4 +40,14 @@ Route::resource('/slug/banks', BankController::class);
 // ========== LOVE GIFT ==========
 Route::get('/slug/{slug_id}/lovegift', [LovegiftController::class, 'edit'])->name('lovegift.edit');
 Route::post('/slug/{slug_id}/lovegift', [LovegiftController::class, 'store'])->name('lovegift.store');
+
+// ========== SONG MANAGEMENT ==========
+Route::resource('/slug/song', SongController::class);
+
+// Song List (per slug)
+Route::get('/slug/{slug_list_id}/song-list', [SongListController::class, 'index'])->name('songlist.index');
+Route::post('/slug/{slug_list_id}/song-list', [SongListController::class, 'store'])->name('songlist.store');
+Route::delete('/song-list/{songList}', [SongListController::class, 'destroy'])->name('songlist.destroy');
+
+
 

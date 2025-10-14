@@ -14,7 +14,9 @@
     <a href="{{ route('banks.index') }}" class="btn btn-success">
             🏦 Master Bank CMS
     </a>
-
+    <a href="{{ route('song.index') }}" class="btn btn-success">
+            🎵 Master Lagu
+    </a>
     <!-- Notifikasi -->
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -59,7 +61,7 @@
                         <select name="theme" class="form-select">
                             <option value="Violet">Violet</option>
                             <option value="Sage">Sage</option>
-                            <option value="biru">Biru</option>
+                            <option value="Brown">Brown</option>
                             <option value="classic">Classic</option>
                             <option value="modern">Modern</option>
                         </select>

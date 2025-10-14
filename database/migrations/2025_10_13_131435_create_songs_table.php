@@ -7,16 +7,17 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('banks', function (Blueprint $table) {
+        Schema::create('songs', function (Blueprint $table) {
             $table->id();
-            $table->string('nama_bank');
-            $table->string('logo_bank')->nullable(); // simpan path logo
+            $table->string('title'); // nama lagu
+            $table->string('file_path'); // path file di storage
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('banks');
+        Schema::dropIfExists('songs');
     }
 };
+
