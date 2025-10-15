@@ -10,7 +10,7 @@
 <body class="bg-light">
 
 <div class="container py-5">
-    <h2 class="mb-4 text-center">📌 Slug Management</h2>
+    <h2 class="mb-4 text-center">📌Management Undangan</h2>
     <a href="{{ route('banks.index') }}" class="btn btn-success">
             🏦 Master Bank CMS
     </a>
