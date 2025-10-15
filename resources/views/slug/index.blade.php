@@ -79,7 +79,7 @@
     <!-- Daftar slug -->
     <div class="card shadow-sm">
         <div class="card-header">
-            <strong>Daftar Slug</strong>
+            <strong>Daftar Nama Undangan</strong>
         </div>
         <div class="card-body">
             @if($slugs->count())
