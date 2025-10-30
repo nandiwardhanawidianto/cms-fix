@@ -11,6 +11,7 @@ use App\Models\Lovegift;
 use App\Models\Counting;
 use App\Models\SongList;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class HeroInvitationApiController extends Controller
 {
@@ -18,6 +19,68 @@ class HeroInvitationApiController extends Controller
      * Ambil semua data undangan berdasarkan slug
      * Contoh: /api/slug/nandimia/listapi
      */
+
+    public function saveInvitation(Request $request)
+{
+    try {
+        $data = $request->all();
+
+        // 1️⃣ Buat slug list dulu
+        $slug = SlugList::create([
+            'slug' => $data['slug'],
+            'nama' => $data['nama'],
+            'keterangan' => $data['slug_keterangan'] ?? null,
+            'theme' => $data['theme'] ?? null,
+        ]);
+
+        // 2️⃣ Simpan hero_invitations pakai slug_id
+        $hero = HeroInvitation::create([
+            'slug_id' => $slug->id,
+            'nama_lengkap_pria' => $data['pengantin_pria']['nama_lengkap'] ?? null,
+            'nama_panggilan_pria' => $data['pengantin_pria']['nama_pendek'] ?? null,
+            'orangtua_pria' => $data['pengantin_pria']['ortu'] ?? null,
+            'nama_lengkap_wanita' => $data['pengantin_wanita']['nama_lengkap'] ?? null,
+            'nama_panggilan_wanita' => $data['pengantin_wanita']['nama_pendek'] ?? null,
+            'orangtua_wanita' => $data['pengantin_wanita']['ortu'] ?? null,
+        ]);
+
+        // 3️⃣ Simpan data turunan lain pakai $slug->id
+        if (isset($data['acaras'])) {
+            foreach ($data['acaras'] as $acara) {
+                Acara::create([
+                    'slug_list_id' => $slug->id,
+                    'nama_acara' => $acara['nama_acara'] ?? null,
+                    'tanggal_acara' => $acara['tanggal'] ?? null,
+                    'pukul_acara' => $acara['jam'] ?? null,
+                    'alamat_acara' => $acara['tempat'] ?? null,
+                    'link_acara' => $acara['maps'] ?? null,
+                ]);
+            }
+        }
+
+        if (isset($data['lovegift'])) {
+            Lovegift::create([
+                'slug_list_id' => $slug->id,
+                'bank_id' => $data['lovegift']['bank_id'] ?? null,
+                'bank_name' => $data['lovegift']['bank_name'] ?? null,
+                'no_rekening' => $data['lovegift']['no_rekening'] ?? null,
+                'pemilik_bank' => $data['lovegift']['nama_rekening'] ?? null,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'slug_id' => $slug->id,
+            'slug' => $slug->slug,
+            'message' => 'Data undangan berhasil disimpan!',
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+}
+
+
     public function listapi($slug): JsonResponse
     {
         try {
