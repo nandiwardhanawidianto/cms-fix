@@ -26,7 +26,10 @@ Route::options('/guest-messages/{any}', function () {
 
 
 // API Routes
-Route::get('/slug/{slug}/listapi', [HeroInvitationApiController::class, 'listapi']);
+Route::get('/{slug}/listapi', [HeroInvitationApiController::class, 'listapi']);
+
+Route::post('/save-invitation', [HeroInvitationApiController::class, 'saveInvitation']);
+
 
 Route::post('/guest-messages/{slug}', [GuestMessageController::class, 'store']);
 Route::get('/guest-messages/{slug}', [GuestMessageController::class, 'index']);
