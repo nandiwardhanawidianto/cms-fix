@@ -1,0 +1,4 @@
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/royq1172/public_html/cms-royalwedding
+    - /bin/cp -R * $DEPLOYPATH
