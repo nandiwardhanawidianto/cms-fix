@@ -44,6 +44,11 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
+            <button class="nav-link" id="kirimkado-tab" data-bs-toggle="tab" data-bs-target="#kirimkado" type="button" role="tab">
+                Kirim Kado
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
             <button class="nav-link" id="song_list-tab" data-bs-toggle="tab" data-bs-target="#song_list" type="button" role="tab">
                 Song List
             </button>
@@ -71,6 +76,11 @@
         <div class="tab-pane fade" id="lovegift" role="tabpanel" aria-labelledby="lovegift-tab">
             @include('slug.partials.lovegift')
         </div>
+
+        <div class="tab-pane fade" id="kirimkado" role="tabpanel" aria-labelledby="kirimkado-tab">
+            @include('slug.partials.kirimkado')
+        </div>
+        
         <div class="tab-pane fade" id="song_list" role="tabpanel" aria-labelledby="song_list-tab">
             @include('slug.partials.song_list')
         </div>

@@ -10,7 +10,8 @@ use App\Http\Controllers\{
     LovegiftController,
     BankController,
     SongController,
-    SongListController
+    SongListController,
+    KirimKadoController
     };
 
 // ========== SLUG MANAGEMENT ==========
@@ -40,6 +41,12 @@ Route::resource('/slug/banks', BankController::class);
 // ========== LOVE GIFT ==========
 Route::get('/slug/{slug_id}/lovegift', [LovegiftController::class, 'edit'])->name('lovegift.edit');
 Route::post('/slug/{slug_id}/lovegift', [LovegiftController::class, 'store'])->name('lovegift.store');
+
+// ========= KIRIM KADO ==========
+Route::get('/slug/{slug_id}/kirim-kado', [KirimKadoController::class, 'edit'])->name('kirimkado.edit');
+Route::post('/slug/{slug_id}/kirim-kado', [KirimKadoController::class, 'store'])->name('kirimkado.store');
+Route::delete('/slug/{slug_id}/kirim-kado', [KirimKadoController::class, 'delete'])->name('kirimkado.delete');
+
 
 // ========== SONG MANAGEMENT ==========
 Route::resource('/slug/song', SongController::class);

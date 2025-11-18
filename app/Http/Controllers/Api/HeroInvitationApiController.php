@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\KirimKado;
 use App\Models\HeroInvitation;
 use App\Models\SlugList;
 use App\Models\Acara;
@@ -16,71 +17,99 @@ use Illuminate\Http\Request;
 class HeroInvitationApiController extends Controller
 {
     /**
-     * Ambil semua data undangan berdasarkan slug
-     * Contoh: /api/slug/nandimia/listapi
+     * Simpan slug baru
      */
+    public function saveslug(Request $request)
+    {
+        try {
+            $data = $request->all();
 
+            $slug = SlugList::create([
+                'slug' => $data['slug'],
+                'nama' => $data['nama'],
+                'keterangan' => $data['slug_keterangan'] ?? null,
+                'theme' => $data['theme'] ?? null,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'slug_id' => $slug->id,
+                'slug' => $slug->slug,
+                'message' => 'Slug berhasil disimpan!',
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Simpan data undangan
+     */
     public function saveInvitation(Request $request)
-{
-    try {
-        $data = $request->all();
+    {
+        try {
+            $data = $request->all();
+            $slug = SlugList::find($data['slug_id']);
 
-        // 1️⃣ Buat slug list dulu
-        $slug = SlugList::create([
-            'slug' => $data['slug'],
-            'nama' => $data['nama'],
-            'keterangan' => $data['slug_keterangan'] ?? null,
-            'theme' => $data['theme'] ?? null,
-        ]);
+            if (!$slug) {
+                return response()->json(['error' => 'Slug tidak ditemukan'], 404);
+            }
 
-        // 2️⃣ Simpan hero_invitations pakai slug_id
-        $hero = HeroInvitation::create([
-            'slug_id' => $slug->id,
-            'nama_lengkap_pria' => $data['pengantin_pria']['nama_lengkap'] ?? null,
-            'nama_panggilan_pria' => $data['pengantin_pria']['nama_pendek'] ?? null,
-            'orangtua_pria' => $data['pengantin_pria']['ortu'] ?? null,
-            'nama_lengkap_wanita' => $data['pengantin_wanita']['nama_lengkap'] ?? null,
-            'nama_panggilan_wanita' => $data['pengantin_wanita']['nama_pendek'] ?? null,
-            'orangtua_wanita' => $data['pengantin_wanita']['ortu'] ?? null,
-        ]);
+            // Simpan hero_invitations
+            $hero = HeroInvitation::create([
+                'slug_id' => $slug->id,
+                'nama_lengkap_pria' => $data['pengantin_pria']['nama_lengkap'] ?? null,
+                'nama_panggilan_pria' => $data['pengantin_pria']['nama_pendek'] ?? null,
+                'orangtua_pria' => $data['pengantin_pria']['ortu'] ?? null,
+                'nama_lengkap_wanita' => $data['pengantin_wanita']['nama_lengkap'] ?? null,
+                'nama_panggilan_wanita' => $data['pengantin_wanita']['nama_pendek'] ?? null,
+                'orangtua_wanita' => $data['pengantin_wanita']['ortu'] ?? null,
+            ]);
 
-        // 3️⃣ Simpan data turunan lain pakai $slug->id
-        if (isset($data['acaras'])) {
-            foreach ($data['acaras'] as $acara) {
-                Acara::create([
+            // Simpan acara
+            if (isset($data['acaras'])) {
+                foreach ($data['acaras'] as $acara) {
+                    Acara::create([
+                        'slug_list_id' => $slug->id,
+                        'nama_acara' => $acara['nama_acara'] ?? null,
+                        'tanggal_acara' => $acara['tanggal'] ?? null,
+                        'pukul_acara' => $acara['jam'] ?? null,
+                        'alamat_acara' => $acara['tempat'] ?? null,
+                        'link_acara' => $acara['maps'] ?? null,
+                    ]);
+                }
+            }
+
+            // Simpan lovegift
+            if (isset($data['lovegift'])) {
+                Lovegift::create([
                     'slug_list_id' => $slug->id,
-                    'nama_acara' => $acara['nama_acara'] ?? null,
-                    'tanggal_acara' => $acara['tanggal'] ?? null,
-                    'pukul_acara' => $acara['jam'] ?? null,
-                    'alamat_acara' => $acara['tempat'] ?? null,
-                    'link_acara' => $acara['maps'] ?? null,
+                    'bank_id' => $data['lovegift']['bank_id'] ?? null,
+                    'bank_name' => $data['lovegift']['bank_name'] ?? null,
+                    'no_rekening' => $data['lovegift']['no_rekening'] ?? null,
+                    'pemilik_bank' => $data['lovegift']['nama_rekening'] ?? null,
                 ]);
             }
+
+            return response()->json([
+                'success' => true,
+                'slug_id' => $slug->id,
+                'slug' => $slug->slug,
+                'message' => 'Data undangan berhasil disimpan!',
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
-
-        if (isset($data['lovegift'])) {
-            Lovegift::create([
-                'slug_list_id' => $slug->id,
-                'bank_id' => $data['lovegift']['bank_id'] ?? null,
-                'bank_name' => $data['lovegift']['bank_name'] ?? null,
-                'no_rekening' => $data['lovegift']['no_rekening'] ?? null,
-                'pemilik_bank' => $data['lovegift']['nama_rekening'] ?? null,
-            ]);
-        }
-
-        return response()->json([
-            'success' => true,
-            'slug_id' => $slug->id,
-            'slug' => $slug->slug,
-            'message' => 'Data undangan berhasil disimpan!',
-        ], 200);
-
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage()], 500);
     }
-}
 
-
+    /**
+     * API utama list data undangan berdasarkan slug
+     */
     public function listapi($slug): JsonResponse
     {
         try {
@@ -93,13 +122,16 @@ class HeroInvitationApiController extends Controller
                 ], 404);
             }
 
+            // Ambil semua data
             $heroInvitation = HeroInvitation::where('slug_id', $slugData->id)->first();
             $acaras = Acara::where('slug_list_id', $slugData->id)->get();
             $galeri = Galeri::where('slug_list_id', $slugData->id)->get();
             $lovegifts = Lovegift::with('bank')->where('slug_list_id', $slugData->id)->get();
             $counting = Counting::where('slug_list_id', $slugData->id)->first();
             $songlist = SongList::with('song')->where('slug_list_id', $slugData->id)->get();
+            $kirimKado = KirimKado::where('slug_list_id', $slugData->id)->first();
 
+            // Response JSON
             $responseData = [
                 'success' => true,
                 'data' => [
@@ -110,13 +142,11 @@ class HeroInvitationApiController extends Controller
                     'galeri' => $this->formatGaleri($galeri),
                     'lovegift' => $this->formatLovegifts($lovegifts),
                     'songlist' => $this->formatSonglist($songlist),
+                    'kirimKado' => $kirimKado ? $this->formatKirimKado($kirimKado) : null,
                 ]
             ];
 
-            return response()->json($responseData, 200, [
-                'Content-Type' => 'application/json; charset=utf-8',
-                'Access-Control-Allow-Origin' => '*'
-            ]);
+            return response()->json($responseData, 200);
 
         } catch (\Exception $e) {
             \Log::error('API Error: ' . $e->getMessage());
@@ -241,6 +271,19 @@ class HeroInvitationApiController extends Controller
         })->toArray();
     }
 
+    private function formatKirimKado($data): array
+    {
+        return [
+            'id' => $data->id,
+            'slug_list_id' => $data->slug_list_id,
+            'nama_penerima' => $data->nama_penerima,
+            'no_hp' => $data->no_hp_penerima,
+            'alamat_penerima' => $data->alamat_penerima,
+            'created_at' => $data->created_at?->toISOString(),
+            'updated_at' => $data->updated_at?->toISOString(),
+        ];
+    }
+
     private function formatSonglist($songlist): array
     {
         return $songlist->map(function ($item) {
@@ -259,6 +302,8 @@ class HeroInvitationApiController extends Controller
             ];
         })->toArray();
     }
+
+
 
     private function isJson($string): bool
     {

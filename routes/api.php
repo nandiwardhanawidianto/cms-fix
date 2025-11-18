@@ -4,6 +4,25 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\HeroInvitationApiController;
 use App\Http\Controllers\Api\GuestMessageController;
+use App\Http\Controllers\Api\KirimKadoController;
+
+
+// API Routes
+Route::get('slug/{slug}/listapi', [HeroInvitationApiController::class, 'listapi']);
+
+Route::post('/saveslug', [HeroInvitationApiController::class, 'saveslug']);
+Route::post('/save-invitation', [HeroInvitationApiController::class, 'saveInvitation']);
+
+Route::post('/guest-messages/{slug}', [GuestMessageController::class, 'store']);
+Route::get('/guest-messages/{slug}', [GuestMessageController::class, 'index']);
+
+Route::post('/guest-messages/{slug}', [GuestMessageController::class, 'store']);
+Route::get('/guest-messages/{slug}', [GuestMessageController::class, 'index']);
+
+// Kirim Kado API Routes
+Route::get('/kirim-kado/{slug}', [KirimKadoController::class, 'show']);
+Route::post('/kirim-kado/{slug}', [KirimKadoController::class, 'store']);
+Route::delete('/kirim-kado/{slug}', [KirimKadoController::class, 'destroy']);
 
 
 Route::options('/guest-messages', function () {
@@ -23,18 +42,6 @@ Route::options('/guest-messages/{any}', function () {
         ->header('Access-Control-Allow-Credentials', 'true')
         ->header('Access-Control-Max-Age', '86400');
 })->where('any', '.*');
-
-
-// API Routes
-Route::get('slug/{slug}/listapi', [HeroInvitationApiController::class, 'listapi']);
-
-Route::post('/save-invitation', [HeroInvitationApiController::class, 'saveInvitation']);
-
-
-Route::post('/guest-messages/{slug}', [GuestMessageController::class, 'store']);
-Route::get('/guest-messages/{slug}', [GuestMessageController::class, 'index']);
-
-
 
 // Static Files Route dengan CORS support
 Route::get('/storage/{path}', function ($path) {
