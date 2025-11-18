@@ -11,6 +11,7 @@ use App\Models\Lovegift;
 use App\Models\Bank;
 use App\Models\SongList;
 use App\Models\Song;
+use App\Models\KirimKado;
 
 class HeroInvitationController extends Controller
 {
@@ -32,6 +33,9 @@ class HeroInvitationController extends Controller
         //load masterbankcms
         $banks = Bank::all();
 
+        //load kirim kado
+        $kirimkado = KirimKado::where('slug_list_id', $id)->first();
+
         //load song
         $songs = Song::all();
         $selectedSongs = SongList::where('slug_list_id', $id)->pluck('song_id')->toArray();
@@ -44,6 +48,7 @@ class HeroInvitationController extends Controller
             'acaras' => $acaras,
             'galeri' => $galeri,
             'lovegift' => $lovegift,
+            'kirimkado' => $kirimkado,
             'banks' =>$banks,
             'songs' => $songs,
             'selectedSong' => $selectedSongs,
