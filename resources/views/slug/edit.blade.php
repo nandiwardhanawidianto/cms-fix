@@ -38,6 +38,13 @@
                 Galeri
             </button>
         </li>
+
+         <li class="nav-item" role="presentation">
+            <button class="nav-link" id="love_story-tab" data-bs-toggle="tab" data-bs-target="#love_story" type="button" role="tab">
+                Love Story
+            </button>
+        </li>
+
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="lovegift-tab" data-bs-toggle="tab" data-bs-target="#lovegift" type="button" role="tab">
                 Love Gift
@@ -71,6 +78,10 @@
 
         <div class="tab-pane fade" id="galeri" role="tabpanel" aria-labelledby="galeri-tab">
             @include('slug.partials.galeri')
+        </div>
+
+        <div class="tab-pane fade" id="love_story" role="tabpanel" aria-labelledby="love_story-tab">
+            @include('slug.partials.love_story')
         </div>
 
         <div class="tab-pane fade" id="lovegift" role="tabpanel" aria-labelledby="lovegift-tab">
