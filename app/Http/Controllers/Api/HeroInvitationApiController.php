@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\love_story;
 use App\Models\KirimKado;
 use App\Models\HeroInvitation;
 use App\Models\SlugList;
@@ -30,7 +31,7 @@ class HeroInvitationApiController extends Controller
                 'keterangan' => $data['slug_keterangan'] ?? null,
                 'theme' => $data['theme'] ?? null,
             ]);
-
+   
             return response()->json([
                 'success' => true,
                 'slug_id' => $slug->id,
@@ -129,6 +130,7 @@ class HeroInvitationApiController extends Controller
             $lovegifts = Lovegift::with('bank')->where('slug_list_id', $slugData->id)->get();
             $counting = Counting::where('slug_list_id', $slugData->id)->first();
             $songlist = SongList::with('song')->where('slug_list_id', $slugData->id)->get();
+            $lovestory = love_story::where('slug_list_id', $slugData->id)->first();
             $kirimKado = KirimKado::where('slug_list_id', $slugData->id)->first();
 
             // Response JSON
@@ -143,7 +145,8 @@ class HeroInvitationApiController extends Controller
                     'lovegift' => $this->formatLovegifts($lovegifts),
                     'songlist' => $this->formatSonglist($songlist),
                     'kirimKado' => $kirimKado ? $this->formatKirimKado($kirimKado) : null,
-                ]
+                    'lovestory' => $lovestory ? $this->formatLoveStory($lovestory) : null,
+                    ]
             ];
 
             return response()->json($responseData, 200);
@@ -269,6 +272,21 @@ class HeroInvitationApiController extends Controller
                 'updated_at' => $lg->updated_at?->toISOString(),
             ];
         })->toArray();
+    }
+
+    private function formatLoveStory($lovestory): array
+    {
+        return [
+            'slug_list_id' => $lovestory->slug_list_id,
+            'awal_pertemuan' => $lovestory->awal_pertemuan,
+            'menjalin_hubungan' => $lovestory->menjalin_hubungan,
+            'lamaran' => $lovestory->lamaran,
+            'gambar_awal' => $lovestory->gambar_awal ? asset('storage/' . $lovestory->gambar_awal) : null,
+            'gambar_hubungan' => $lovestory->gambar_hubungan ? asset('storage/' . $lovestory->gambar_hubungan) : null,
+            'gambar_lamaran' => $lovestory->gambar_lamaran ? asset('storage/' . $lovestory->gambar_lamaran) : null,
+            'created_at' => $lovestory->created_at?->toISOString(),
+            'updated_at' => $lovestory->updated_at?->toISOString(),
+        ];
     }
 
     private function formatKirimKado($data): array

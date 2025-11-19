@@ -11,6 +11,7 @@ use App\Http\Controllers\{
     BankController,
     SongController,
     SongListController,
+    LoveStoryController,
     KirimKadoController
     };
 
@@ -46,6 +47,11 @@ Route::post('/slug/{slug_id}/lovegift', [LovegiftController::class, 'store'])->n
 Route::get('/slug/{slug_id}/kirim-kado', [KirimKadoController::class, 'edit'])->name('kirimkado.edit');
 Route::post('/slug/{slug_id}/kirim-kado', [KirimKadoController::class, 'store'])->name('kirimkado.store');
 Route::delete('/slug/{slug_id}/kirim-kado', [KirimKadoController::class, 'delete'])->name('kirimkado.delete');
+
+// ========== LOVE STORY ==========
+Route::get('/slug/{slug_id}/love-story', [App\Http\Controllers\LoveStoryController::class, 'edit'])->name('LoveStory.edit');
+Route::post('/slug/{slug_id}/love-story', [App\Http\Controllers\LoveStoryController::class, 'store'])->name('LoveStory.store');
+route::delete('/slug/{slug_id}/love-story', [App\Http\Controllers\LoveStoryController::class, 'delete'])->name('LoveStory.delete');
 
 
 // ========== SONG MANAGEMENT ==========

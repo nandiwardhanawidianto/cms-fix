@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\HeroInvitationApiController;
 use App\Http\Controllers\Api\GuestMessageController;
 use App\Http\Controllers\Api\KirimKadoController;
-
+use App\Http\Controllers\HeroInvitationController;
 
 // API Routes
 Route::get('slug/{slug}/listapi', [HeroInvitationApiController::class, 'listapi']);
@@ -23,6 +23,8 @@ Route::get('/guest-messages/{slug}', [GuestMessageController::class, 'index']);
 Route::get('/kirim-kado/{slug}', [KirimKadoController::class, 'show']);
 Route::post('/kirim-kado/{slug}', [KirimKadoController::class, 'store']);
 Route::delete('/kirim-kado/{slug}', [KirimKadoController::class, 'destroy']);
+
+
 
 
 Route::options('/guest-messages', function () {

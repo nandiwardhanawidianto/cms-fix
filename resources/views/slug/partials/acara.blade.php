@@ -1,10 +1,6 @@
 <div class="container mt-4">
     <h4>📅 Form Acara</h4>
 
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
     <form action="{{ route('acara.store', $slug_id) }}" method="POST">
         @csrf
 

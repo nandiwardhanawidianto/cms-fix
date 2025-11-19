@@ -12,6 +12,7 @@ use App\Models\Bank;
 use App\Models\SongList;
 use App\Models\Song;
 use App\Models\KirimKado;
+use App\Models\love_story;
 
 class HeroInvitationController extends Controller
 {
@@ -40,7 +41,9 @@ class HeroInvitationController extends Controller
         $songs = Song::all();
         $selectedSongs = SongList::where('slug_list_id', $id)->pluck('song_id')->toArray();
         
-
+        //load Lovestory
+        $lovestory = love_story::where('slug_list_id', $id)->first();
+   
         return view('slug.edit', [
             'slug' => $slug,
             'slug_id' => $id, 
@@ -52,6 +55,7 @@ class HeroInvitationController extends Controller
             'banks' =>$banks,
             'songs' => $songs,
             'selectedSong' => $selectedSongs,
+            'lovestory' => $lovestory
         ]);
     }
 
