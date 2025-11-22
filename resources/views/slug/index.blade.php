@@ -62,8 +62,8 @@
                             <option value="Violet">Violet</option>
                             <option value="Sage">Sage</option>
                             <option value="Brown">Brown</option>
-                            <option value="classic">Classic</option>
-                            <option value="modern">Modern</option>
+                            <option value="Jawa">Jawa</option>
+                            <option value="Pink">Pink</option>
                         </select>
                     </div>
 
