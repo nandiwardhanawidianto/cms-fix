@@ -278,6 +278,9 @@ class HeroInvitationApiController extends Controller
     {
         return [
             'slug_list_id' => $lovestory->slug_list_id,
+            'judul_awal_pertemuan' => $lovestory->judul_awal_pertemuan,
+            'judul_menjalin_hubungan' => $lovestory->judul_menjalin_hubungan,
+            'judul_lamaran' => $lovestory->judul_lamaran,
             'awal_pertemuan' => $lovestory->awal_pertemuan,
             'menjalin_hubungan' => $lovestory->menjalin_hubungan,
             'lamaran' => $lovestory->lamaran,

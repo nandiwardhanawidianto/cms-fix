@@ -10,6 +10,9 @@ class love_story extends Model
 
     protected $fillable = [
         'slug_list_id',
+        'judul_awal_pertemuan',
+        'judul_menjalin_hubungan',
+        'judul_lamaran',
         'awal_pertemuan',
         'menjalin_hubungan',
         'lamaran',

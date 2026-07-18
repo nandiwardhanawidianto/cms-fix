@@ -21,9 +21,12 @@ class LoveStoryController extends Controller
     public function store(Request $request, $slug_id)
     {
         $data = $request->validate([
-            'awal_pertemuan'      => 'nullable|string',
-            'menjalin_hubungan'   => 'nullable|string',
-            'lamaran'             => 'nullable|string',
+            'judul_awal_pertemuan'    => 'nullable|string',
+            'judul_menjalin_hubungan' => 'nullable|string',
+            'judul_lamaran'           => 'nullable|string',
+            'awal_pertemuan'          => 'nullable|string',
+            'menjalin_hubungan'       => 'nullable|string',
+            'lamaran'                 => 'nullable|string',
 
             'gambar_awal'         => 'nullable|image|max:2048',
             'gambar_hubungan'     => 'nullable|image|max:2048',
