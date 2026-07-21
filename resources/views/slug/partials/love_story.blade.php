@@ -24,19 +24,33 @@
                 <h6 class="fw-bold">📘 Cerita</h6>
 
                 <div class="mb-3">
-                    <label class="fw-bold">Awal Pertemuan</label>
+                    <label class="fw-bold">Judul Awal Pertemuan</label>
+                    <input type="text" name="judul_awal_pertemuan" class="form-control mb-2"
+                    value="{{ $lovestory->judul_awal_pertemuan ?? '' }}" placeholder="Judul awal pertemuan...">
+                    
+                    <label class="fw-bold">Cerita Awal Pertemuan</label>
                     <textarea name="awal_pertemuan" class="form-control" rows="3"
                               placeholder="Ceritakan awal pertemuan...">{{ $lovestory->awal_pertemuan ?? '' }}</textarea>
                 </div>
 
                 <div class="mb-3">
-                    <label class="fw-bold">Menjalin Hubungan</label>
+
+                <label class="fw-bold">Judul Menjalin Hubungan</label>
+                    <input type="text" name="judul_menjalin_hubungan" class="form-control mb-2"
+                           value="{{ $lovestory->judul_menjalin_hubungan ?? '' }}" placeholder="Judul perjalanan hubungan...">
+
+                    <label class="fw-bold">Cerita Menjalin Hubungan</label>
                     <textarea name="menjalin_hubungan" class="form-control" rows="3"
                               placeholder="Ceritakan perjalanan hubungan...">{{ $lovestory->menjalin_hubungan ?? '' }}</textarea>
                 </div>
 
                 <div class="mb-3">
-                    <label class="fw-bold">Cerita Lamaran</label>
+
+                <label class="fw-bold">Judul Lamaran</label>
+                    <input type="text" name="judul_lamaran" class="form-control mb-2"
+                           value="{{ $lovestory->judul_lamaran ?? '' }}" placeholder="Judul momen lamaran...">
+                    
+                           <label class="fw-bold">Cerita Lamaran</label>
                     <textarea name="lamaran" class="form-control" rows="3"
                               placeholder="Ceritakan momen lamaran...">{{ $lovestory->lamaran ?? '' }}</textarea>
                 </div>
