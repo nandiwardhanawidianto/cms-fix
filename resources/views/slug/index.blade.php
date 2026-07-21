@@ -64,6 +64,10 @@
                             <option value="Brown">Brown</option>
                             <option value="Jawa">Jawa</option>
                             <option value="Pink">Pink</option>
+                            <option value="Biru">Biru</option>
+                            <option value="Hitam">Hitam</option>
+                            <option value="Pink">Pink</option>
+                            <option value="Bali">Bali</option>
                         </select>
                     </div>
 
