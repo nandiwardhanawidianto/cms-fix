@@ -1,7 +1,9 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 use App\Models\HeroInvitation;
 use App\Models\SlugList;
@@ -22,39 +24,44 @@ class HeroInvitationController extends Controller
 
         $heroInvitation = HeroInvitation::where('slug_id', $id)->first();
 
-        // load acara biar partial acara ga error
+        // Load acara
         $acaras = Acara::where('slug_list_id', $id)->get();
 
-        //load galeri
+        // Load galeri
         $galeri = Galeri::where('slug_list_id', $id)->first();
 
-        //load lovegift
-        $lovegift = Lovegift::where('slug_list_id', $id)->first();
+        // Load Love Gift
+        $love_gifts = Lovegift::with('bank')
+            ->where('slug_list_id', $id)
+            ->get();
 
-        //load masterbankcms
+        // Load master bank
         $banks = Bank::all();
 
-        //load kirim kado
+        // Load kirim kado
         $kirimkado = KirimKado::where('slug_list_id', $id)->first();
 
-        //load song
+        // Load song
         $songs = Song::all();
-        $selectedSongs = SongList::where('slug_list_id', $id)->pluck('song_id')->toArray();
-        
-        //load Lovestory
+
+        $selectedSongLists = SongList::with('song')
+            ->where('slug_list_id', $id)
+            ->get();
+
+        // Load love story
         $lovestory = love_story::where('slug_list_id', $id)->first();
-   
+
         return view('slug.edit', [
             'slug' => $slug,
-            'slug_id' => $id, 
+            'slug_id' => $id,
             'heroInvitation' => $heroInvitation,
             'acaras' => $acaras,
             'galeri' => $galeri,
-            'lovegift' => $lovegift,
+            'love_gifts' => $love_gifts,
             'kirimkado' => $kirimkado,
-            'banks' =>$banks,
+            'banks' => $banks,
             'songs' => $songs,
-            'selectedSong' => $selectedSongs,
+            'selectedSongLists' => $selectedSongLists,
             'lovestory' => $lovestory
         ]);
     }
@@ -62,29 +69,252 @@ class HeroInvitationController extends Controller
 
     public function store(Request $request, $slug_id)
     {
-        $data = $request->validate([
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDASI
+        |--------------------------------------------------------------------------
+        */
+
+        $request->validate([
             'nama_panggilan_pria' => 'required|string|max:255',
-            'nama_lengkap_pria'   => 'required|string|max:255',
-            'foto_pria'           => 'nullable|image|max:2048',
-            'orangtua_pria'       => 'required|string|max:255',
+            'nama_lengkap_pria' => 'required|string|max:255',
+            'orangtua_pria' => 'required|string|max:255',
 
             'nama_panggilan_wanita' => 'required|string|max:255',
-            'nama_lengkap_wanita'   => 'required|string|max:255',
-            'foto_wanita'           => 'nullable|image|max:2048',
-            'orangtua_wanita'       => 'required|string|max:255',
+            'nama_lengkap_wanita' => 'required|string|max:255',
+            'orangtua_wanita' => 'required|string|max:255',
+
+            // Hasil crop berupa Base64
+            'foto_pria_cropped' => 'nullable|string',
+            'foto_wanita_cropped' => 'nullable|string',
         ]);
 
-        if ($request->hasFile('foto_pria')) {
-            $data['foto_pria'] = $request->file('foto_pria')->store('hero', 'public');
+
+        /*
+        |--------------------------------------------------------------------------
+        | AMBIL / BUAT HERO
+        |--------------------------------------------------------------------------
+        */
+
+        $heroInvitation = HeroInvitation::firstOrNew([
+            'slug_id' => $slug_id
+        ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | DATA PRIA
+        |--------------------------------------------------------------------------
+        */
+
+        $heroInvitation->nama_panggilan_pria =
+            $request->nama_panggilan_pria;
+
+        $heroInvitation->nama_lengkap_pria =
+            $request->nama_lengkap_pria;
+
+        $heroInvitation->orangtua_pria =
+            $request->orangtua_pria;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | DATA WANITA
+        |--------------------------------------------------------------------------
+        */
+
+        $heroInvitation->nama_panggilan_wanita =
+            $request->nama_panggilan_wanita;
+
+        $heroInvitation->nama_lengkap_wanita =
+            $request->nama_lengkap_wanita;
+
+        $heroInvitation->orangtua_wanita =
+            $request->orangtua_wanita;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | FOTO PRIA
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('foto_pria_cropped')) {
+
+            $fotoPria = $this->saveCroppedImage(
+                $request->foto_pria_cropped,
+                'pria'
+            );
+
+            if ($fotoPria) {
+
+                // Hapus foto lama jika ada
+                if (!empty($heroInvitation->foto_pria)) {
+
+                    if (
+                        Storage::disk('public')
+                            ->exists($heroInvitation->foto_pria)
+                    ) {
+
+                        Storage::disk('public')
+                            ->delete($heroInvitation->foto_pria);
+                    }
+                }
+
+                $heroInvitation->foto_pria = $fotoPria;
+            }
         }
-        if ($request->hasFile('foto_wanita')) {
-            $data['foto_wanita'] = $request->file('foto_wanita')->store('hero', 'public');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | FOTO WANITA
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('foto_wanita_cropped')) {
+
+            $fotoWanita = $this->saveCroppedImage(
+                $request->foto_wanita_cropped,
+                'wanita'
+            );
+
+            if ($fotoWanita) {
+
+                // Hapus foto lama jika ada
+                if (!empty($heroInvitation->foto_wanita)) {
+
+                    if (
+                        Storage::disk('public')
+                            ->exists($heroInvitation->foto_wanita)
+                    ) {
+
+                        Storage::disk('public')
+                            ->delete($heroInvitation->foto_wanita);
+                    }
+                }
+
+                $heroInvitation->foto_wanita = $fotoWanita;
+            }
         }
 
-        $data['slug_id'] = $slug_id;
 
-        HeroInvitation::updateOrCreate(['slug_id' => $slug_id], $data);
+        /*
+        |--------------------------------------------------------------------------
+        | SIMPAN
+        |--------------------------------------------------------------------------
+        */
 
-        return back()->with('success', 'Hero & Invitation berhasil disimpan!');
+        $heroInvitation->slug_id = $slug_id;
+
+        $heroInvitation->save();
+
+
+        return back()->with(
+            'success',
+            'Hero & Invitation berhasil disimpan!'
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SIMPAN HASIL CROPPER
+    |--------------------------------------------------------------------------
+    |
+    | Upload awal boleh PNG / JPG / JPEG.
+    | Setelah crop, browser mengubah hasil menjadi JPEG.
+    |
+    */
+
+    private function saveCroppedImage($base64Image, $jenis)
+    {
+        if (empty($base64Image)) {
+            return null;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pastikan Base64 adalah gambar yang benar
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !preg_match(
+                '/^data:image\/(jpeg|jpg|png);base64,/',
+                $base64Image
+            )
+        ) {
+            return null;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Hilangkan header Base64
+        |--------------------------------------------------------------------------
+        */
+
+        $imageData = preg_replace(
+            '/^data:image\/(jpeg|jpg|png);base64,/',
+            '',
+            $base64Image
+        );
+
+
+        $imageData = str_replace(
+            ' ',
+            '+',
+            $imageData
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Decode
+        |--------------------------------------------------------------------------
+        */
+
+        $decodedImage = base64_decode(
+            $imageData,
+            true
+        );
+
+
+        if ($decodedImage === false) {
+            return null;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Nama file
+        |--------------------------------------------------------------------------
+        */
+
+        $filename =
+            'hero/' .
+            $jenis .
+            '_' .
+            time() .
+            '_' .
+            uniqid() .
+            '.jpg';
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Simpan ke storage/app/public/hero
+        |--------------------------------------------------------------------------
+        */
+
+        Storage::disk('public')->put(
+            $filename,
+            $decodedImage
+        );
+
+
+        return $filename;
     }
 }

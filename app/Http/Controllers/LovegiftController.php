@@ -5,48 +5,104 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Lovegift;
 use App\Models\SlugList;
-use App\Models\HeroInvitation;
 use App\Models\Bank;
 
 class LovegiftController extends Controller
 {
+    /*
+    |--------------------------------------------------------------------------
+    | EDIT
+    |--------------------------------------------------------------------------
+    */
+
     public function edit($slug_id)
     {
-        // Pastikan slug ada
         $slug = SlugList::findOrFail($slug_id);
 
-        // Ambil semua bank master CMS
         $banks = Bank::all();
 
-        // Ambil data Lovegift berdasarkan slug
-        $love_gifts = Lovegift::where('slug_list_id', $slug_id)
-            ->with('bank')
+        $love_gifts = Lovegift::with('bank')
+            ->where('slug_list_id', $slug_id)
             ->get();
 
-        // Debug kalau kosong
-        // dd($love_gifts, $banks);
-
-        return view('slug.Lovegift', compact('slug_id', 'love_gifts', 'banks'));
+        return view(
+            'slug.Lovegift',
+            compact(
+                'slug',
+                'slug_id',
+                'love_gifts',
+                'banks'
+            )
+        );
     }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | STORE
+    |--------------------------------------------------------------------------
+    */
 
     public function store(Request $request, $slug_id)
     {
-        // Hapus semua lovegift lama
-        Lovegift::where('slug_list_id', $slug_id)->delete();
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDASI
+        |--------------------------------------------------------------------------
+        */
 
-        $bank_ids = $request->bank_id ?? [];
-        $no_rekenings = $request->no_rekening ?? [];
-        $pemilik_banks = $request->pemilik_bank ?? [];
+        $request->validate([
+            'bank_id' => 'required|array|max:3',
+            'bank_id.*' => 'required|exists:banks,id',
 
-        foreach ($bank_ids as $index => $bank_id) {
+            'no_rekening' => 'required|array',
+            'no_rekening.*' => 'required|string|max:100',
+
+            'pemilik_bank' => 'required|array',
+            'pemilik_bank.*' => 'required|string|max:255',
+        ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | HAPUS DATA LAMA
+        |--------------------------------------------------------------------------
+        */
+
+        Lovegift::where(
+            'slug_list_id',
+            $slug_id
+        )->delete();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | SIMPAN DATA BARU
+        |--------------------------------------------------------------------------
+        */
+
+        foreach (
+            $request->bank_id
+            as $index => $bank_id
+        ) {
+
             Lovegift::create([
                 'slug_list_id' => $slug_id,
+
                 'bank_id' => $bank_id,
-                'no_rekening' => $no_rekenings[$index] ?? '',
-                'pemilik_bank' => $pemilik_banks[$index] ?? '',
+
+                'no_rekening' =>
+                    $request->no_rekening[$index],
+
+                'pemilik_bank' =>
+                    $request->pemilik_bank[$index],
             ]);
         }
 
-        return redirect()->back()->with('success', 'Love Gift berhasil disimpan!');
+
+        return back()->with(
+            'success',
+            'Love Gift berhasil disimpan!'
+        );
     }
 }

@@ -29,30 +29,115 @@ class AcaraController extends Controller
     }
 
     public function store(Request $request, $slug_id)
-    {
-        $validated = $request->validate([
-            'nama_acara.*'    => 'required|string|max:255',
-            'tanggal_acara.*' => 'required|date',
-            'pukul_acara.*'   => 'required|string|max:50',
-            'alamat_acara.*'  => 'required|string',
-            'link_acara.*'    => 'required|string',
+{
+    /*
+    |--------------------------------------------------------------------------
+    | VALIDASI
+    |--------------------------------------------------------------------------
+    */
+
+    $request->validate([
+
+        'nama_acara' =>
+            'required|array|min:1|max:3',
+
+        'nama_acara.*' =>
+            'required|string|max:255',
+
+
+        'tanggal_acara' =>
+            'required|array|min:1|max:3',
+
+        'tanggal_acara.*' =>
+            'required|date',
+
+
+        'pukul_acara' =>
+            'required|array|min:1|max:3',
+
+        'pukul_acara.*' =>
+            'required|string|max:50',
+
+
+        'alamat_acara' =>
+            'required|array|min:1|max:3',
+
+        'alamat_acara.*' =>
+            'required|string',
+
+
+        /*
+        | LINK MAPS OPSIONAL
+        */
+
+        'link_acara' =>
+            'nullable|array|max:3',
+
+        'link_acara.*' =>
+            'nullable|string|max:2000',
+    ]);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | HAPUS ACARA LAMA
+    |--------------------------------------------------------------------------
+    |
+    | Karena form yang dikirim merupakan keadaan terbaru,
+    | semua data lama dihapus dan dibuat ulang.
+    |
+    */
+
+    Acara::where(
+        'slug_list_id',
+        $slug_id
+    )->delete();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SIMPAN ACARA TERBARU
+    |--------------------------------------------------------------------------
+    */
+
+    foreach (
+        $request->nama_acara
+        as $i => $nama
+    ) {
+
+        Acara::create([
+
+            'slug_list_id' =>
+                $slug_id,
+
+            'nama_acara' =>
+                $nama,
+
+            'tanggal_acara' =>
+                $request->tanggal_acara[$i],
+
+            'pukul_acara' =>
+                $request->pukul_acara[$i],
+
+            'alamat_acara' =>
+                $request->alamat_acara[$i],
+
+            /*
+            | Kalau kosong simpan NULL.
+            */
+
+            'link_acara' =>
+                !empty($request->link_acara[$i])
+                    ? $request->link_acara[$i]
+                    : null,
+
         ]);
-
-        // Hapus data lama
-        Acara::where('slug_list_id', $slug_id)->delete();
-
-        // Simpan data baru
-        foreach ($request->nama_acara as $i => $nama) {
-            Acara::create([
-                'slug_list_id' => $slug_id,
-                'nama_acara'   => $nama,
-                'tanggal_acara'=> $request->tanggal_acara[$i],
-                'pukul_acara'  => $request->pukul_acara[$i],
-                'alamat_acara' => $request->alamat_acara[$i],
-                'link_acara'   => $request->link_acara[$i],
-            ]);
-        }
-
-        return back()->with('success', 'Acara berhasil disimpan!');
     }
+
+
+    return back()->with(
+        'success',
+        'Acara berhasil disimpan!'
+    );
+}
 }

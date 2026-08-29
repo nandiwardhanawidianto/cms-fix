@@ -56,20 +56,21 @@
                         <input type="text" name="keterangan" class="form-control" placeholder="contoh: Undangan Ungu">
                     </div>
 
-                    <div class="col-md-4">
-                        <label class="form-label">Tema</label>
-                        <select name="theme" class="form-select">
-                            <option value="Violet">Violet</option>
-                            <option value="Sage">Sage</option>
-                            <option value="Brown">Brown</option>
-                            <option value="Jawa">Jawa</option>
-                            <option value="Pink">Pink</option>
-                            <option value="Biru">Biru</option>
-                            <option value="Hitam">Hitam</option>
-                            <option value="Pink">Pink</option>
-                            <option value="Bali">Bali</option>
-                        </select>
-                    </div>
+                <div class="col-md-4">
+                    <label class="form-label">Tema</label>
+                    <input 
+                        type="text" 
+                        name="theme" 
+                        class="form-control @error('theme') is-invalid @enderror"
+                        placeholder="Violet,Sage,Brown,Jawa,Bali,Pink,Biru,Hitam,Dayak,Bugis"
+                        value="{{ old('theme') }}"
+                        required
+                    >
+
+                    @error('theme')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
 
 
                     <div class="col-md-2 d-flex align-items-end">
