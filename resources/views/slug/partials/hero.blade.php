@@ -37,6 +37,18 @@
             border-radius: 8px;
             border: 1px solid #ddd;
         }
+
+        .mempelai-section {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .section-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 
@@ -60,220 +72,366 @@
 
                 @csrf
 
-                <div class="row g-3">
 
-                    {{-- ====================== --}}
-                    {{-- MEMPELAI PRIA --}}
-                    {{-- ====================== --}}
+                {{-- ====================== --}}
+                {{-- ERROR --}}
+                {{-- ====================== --}}
 
-                    <div class="col-md-6">
+                @if($errors->has('mempelai'))
+                    <div class="alert alert-danger">
+                        {{ $errors->first('mempelai') }}
+                    </div>
+                @endif
 
-                        <label class="form-label">
-                            Nama Panggilan Pria
-                        </label>
 
-                        <input
-                            type="text"
-                            name="nama_panggilan_pria"
-                            value="{{ old('nama_panggilan_pria', $heroInvitation->nama_panggilan_pria ?? '') }}"
-                            class="form-control"
-                        >
+                @if($errors->any() && !$errors->has('mempelai'))
+                    <div class="alert alert-danger">
+
+                        <strong>Data belum bisa disimpan.</strong>
+
+                        <ul class="mb-0 mt-2">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
 
                     </div>
+                @endif
 
 
-                    <div class="col-md-6">
-
-                        <label class="form-label">
-                            Nama Lengkap Pria
-                        </label>
-
-                        <input
-                            type="text"
-                            name="nama_lengkap_pria"
-                            value="{{ old('nama_lengkap_pria', $heroInvitation->nama_lengkap_pria ?? '') }}"
-                            class="form-control"
-                        >
-
-                    </div>
+                <div class="alert alert-info">
+                    Minimal isi salah satu mempelai.
+                    Mempelai 1 atau Mempelai 2 boleh dikosongkan.
+                </div>
 
 
-                    <div class="col-md-6">
-
-                        <label class="form-label">
-                            Foto Pria
-                        </label>
-
-                        <input
-                            type="file"
-                            id="fotoPriaInput"
-                            accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-                            class="form-control"
-                        >
-
-                        <small class="text-muted">
-                            Format: JPG, JPEG, atau PNG.
-                        </small>
-
-                        {{-- Hasil crop --}}
-                        <input
-                            type="hidden"
-                            name="foto_pria_cropped"
-                            id="fotoPriaCropped"
-                        >
-
-                        <div class="mt-3">
-
-                            @if(!empty($heroInvitation->foto_pria))
-
-                                <img
-                                    src="{{ asset('storage/'.$heroInvitation->foto_pria) }}"
-                                    id="previewPria"
-                                    class="foto-preview"
-                                    alt="Foto Pria"
-                                >
-
-                            @else
-
-                                <img
-                                    id="previewPria"
-                                    class="foto-preview"
-                                    alt="Foto Pria"
-                                    style="display:none;"
-                                >
-
-                            @endif
-
-                        </div>
-
-                    </div>
+                <div class="row g-4">
 
 
-                    <div class="col-md-6">
-
-                        <label class="form-label">
-                            Orang Tua Pria
-                        </label>
-
-                        <input
-                            type="text"
-                            name="orangtua_pria"
-                            value="{{ old('orangtua_pria', $heroInvitation->orangtua_pria ?? '') }}"
-                            class="form-control"
-                        >
-
-                    </div>
-
+                    {{-- ====================================================== --}}
+                    {{-- MEMPELAI 1 --}}
+                    {{-- ====================================================== --}}
 
                     <div class="col-12">
-                        <hr>
-                    </div>
+
+                        <div class="mempelai-section">
+
+                            <div class="mb-4">
+
+                                <h5 class="section-title">
+                                    Mempelai 1
+                                </h5>
+
+                                <small class="text-muted">
+                                    Boleh dikosongkan jika Mempelai 2 diisi.
+                                </small>
+
+                            </div>
 
 
-                    {{-- ====================== --}}
-                    {{-- MEMPELAI WANITA --}}
-                    {{-- ====================== --}}
-
-                    <div class="col-md-6">
-
-                        <label class="form-label">
-                            Nama Panggilan Wanita
-                        </label>
-
-                        <input
-                            type="text"
-                            name="nama_panggilan_wanita"
-                            value="{{ old('nama_panggilan_wanita', $heroInvitation->nama_panggilan_wanita ?? '') }}"
-                            class="form-control"
-                        >
-
-                    </div>
+                            <div class="row g-3">
 
 
-                    <div class="col-md-6">
+                                {{-- Nama Panggilan --}}
+                                <div class="col-md-6">
 
-                        <label class="form-label">
-                            Nama Lengkap Wanita
-                        </label>
+                                    <label class="form-label">
+                                        Nama Panggilan Mempelai 1
+                                    </label>
 
-                        <input
-                            type="text"
-                            name="nama_lengkap_wanita"
-                            value="{{ old('nama_lengkap_wanita', $heroInvitation->nama_lengkap_wanita ?? '') }}"
-                            class="form-control"
-                        >
+                                    <input
+                                        type="text"
+                                        name="nama_panggilan_pria"
+                                        value="{{ old('nama_panggilan_pria', $heroInvitation->nama_panggilan_pria ?? '') }}"
+                                        class="form-control @error('nama_panggilan_pria') is-invalid @enderror"
+                                        placeholder="Contoh: Andra"
+                                    >
 
-                    </div>
+                                    @error('nama_panggilan_pria')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+
+                                </div>
 
 
-                    <div class="col-md-6">
+                                {{-- Nama Lengkap --}}
+                                <div class="col-md-6">
 
-                        <label class="form-label">
-                            Foto Wanita
-                        </label>
+                                    <label class="form-label">
+                                        Nama Lengkap Mempelai 1
+                                    </label>
 
-                        <input
-                            type="file"
-                            id="fotoWanitaInput"
-                            accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-                            class="form-control"
-                        >
+                                    <input
+                                        type="text"
+                                        name="nama_lengkap_pria"
+                                        value="{{ old('nama_lengkap_pria', $heroInvitation->nama_lengkap_pria ?? '') }}"
+                                        class="form-control @error('nama_lengkap_pria') is-invalid @enderror"
+                                        placeholder="Contoh: Putra Andra Ramadhan"
+                                    >
 
-                        <small class="text-muted">
-                            Format: JPG, JPEG, atau PNG.
-                        </small>
+                                    @error('nama_lengkap_pria')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
 
-                        {{-- Hasil crop --}}
-                        <input
-                            type="hidden"
-                            name="foto_wanita_cropped"
-                            id="fotoWanitaCropped"
-                        >
+                                </div>
 
-                        <div class="mt-3">
 
-                            @if(!empty($heroInvitation->foto_wanita))
+                                {{-- Foto --}}
+                                <div class="col-md-6">
 
-                                <img
-                                    src="{{ asset('storage/'.$heroInvitation->foto_wanita) }}"
-                                    id="previewWanita"
-                                    class="foto-preview"
-                                    alt="Foto Wanita"
-                                >
+                                    <label class="form-label">
+                                        Foto Mempelai 1
+                                    </label>
 
-                            @else
+                                    <input
+                                        type="file"
+                                        id="fotoPriaInput"
+                                        accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                                        class="form-control"
+                                    >
 
-                                <img
-                                    id="previewWanita"
-                                    class="foto-preview"
-                                    alt="Foto Wanita"
-                                    style="display:none;"
-                                >
+                                    <small class="text-muted">
+                                        Opsional. Format JPG, JPEG, atau PNG.
+                                    </small>
 
-                            @endif
+
+                                    {{-- Hasil crop --}}
+                                    <input
+                                        type="hidden"
+                                        name="foto_pria_cropped"
+                                        id="fotoPriaCropped"
+                                    >
+
+
+                                    <div class="mt-3">
+
+                                        @if(!empty($heroInvitation->foto_pria))
+
+                                            <img
+                                                src="{{ asset('storage/'.$heroInvitation->foto_pria) }}"
+                                                id="previewPria"
+                                                class="foto-preview"
+                                                alt="Foto Mempelai 1"
+                                            >
+
+                                        @else
+
+                                            <img
+                                                id="previewPria"
+                                                class="foto-preview"
+                                                alt="Foto Mempelai 1"
+                                                style="display:none;"
+                                            >
+
+                                        @endif
+
+                                    </div>
+
+                                </div>
+
+
+                                {{-- Orang Tua --}}
+                                <div class="col-md-6">
+
+                                    <label class="form-label">
+                                        Orang Tua Mempelai 1
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        name="orangtua_pria"
+                                        value="{{ old('orangtua_pria', $heroInvitation->orangtua_pria ?? '') }}"
+                                        class="form-control @error('orangtua_pria') is-invalid @enderror"
+                                        placeholder="Contoh: Bapak Ahmad & Ibu Siti"
+                                    >
+
+                                    @error('orangtua_pria')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+
+                                </div>
+
+
+                            </div>
 
                         </div>
 
                     </div>
 
 
-                    <div class="col-md-6">
 
-                        <label class="form-label">
-                            Orang Tua Wanita
-                        </label>
+                    {{-- ====================================================== --}}
+                    {{-- MEMPELAI 2 --}}
+                    {{-- ====================================================== --}}
 
-                        <input
-                            type="text"
-                            name="orangtua_wanita"
-                            value="{{ old('orangtua_wanita', $heroInvitation->orangtua_wanita ?? '') }}"
-                            class="form-control"
-                        >
+                    <div class="col-12">
+
+                        <div class="mempelai-section">
+
+                            <div class="mb-4">
+
+                                <h5 class="section-title">
+                                    Mempelai 2
+                                    <span class="badge bg-secondary">
+                                        Opsional
+                                    </span>
+                                </h5>
+
+                                <small class="text-muted">
+                                    Tidak perlu diisi jika undangan hanya menggunakan satu mempelai.
+                                </small>
+
+                            </div>
+
+
+                            <div class="row g-3">
+
+
+                                {{-- Nama Panggilan --}}
+                                <div class="col-md-6">
+
+                                    <label class="form-label">
+                                        Nama Panggilan Mempelai 2
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        name="nama_panggilan_wanita"
+                                        value="{{ old('nama_panggilan_wanita', $heroInvitation->nama_panggilan_wanita ?? '') }}"
+                                        class="form-control @error('nama_panggilan_wanita') is-invalid @enderror"
+                                        placeholder="Contoh: Nova"
+                                    >
+
+                                    @error('nama_panggilan_wanita')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+
+                                </div>
+
+
+                                {{-- Nama Lengkap --}}
+                                <div class="col-md-6">
+
+                                    <label class="form-label">
+                                        Nama Lengkap Mempelai 2
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        name="nama_lengkap_wanita"
+                                        value="{{ old('nama_lengkap_wanita', $heroInvitation->nama_lengkap_wanita ?? '') }}"
+                                        class="form-control @error('nama_lengkap_wanita') is-invalid @enderror"
+                                        placeholder="Contoh: Nova Suciati"
+                                    >
+
+                                    @error('nama_lengkap_wanita')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+
+                                </div>
+
+
+                                {{-- Foto --}}
+                                <div class="col-md-6">
+
+                                    <label class="form-label">
+                                        Foto Mempelai 2
+                                    </label>
+
+                                    <input
+                                        type="file"
+                                        id="fotoWanitaInput"
+                                        accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                                        class="form-control"
+                                    >
+
+                                    <small class="text-muted">
+                                        Opsional. Format JPG, JPEG, atau PNG.
+                                    </small>
+
+
+                                    {{-- Hasil crop --}}
+                                    <input
+                                        type="hidden"
+                                        name="foto_wanita_cropped"
+                                        id="fotoWanitaCropped"
+                                    >
+
+
+                                    <div class="mt-3">
+
+                                        @if(!empty($heroInvitation->foto_wanita))
+
+                                            <img
+                                                src="{{ asset('storage/'.$heroInvitation->foto_wanita) }}"
+                                                id="previewWanita"
+                                                class="foto-preview"
+                                                alt="Foto Mempelai 2"
+                                            >
+
+                                        @else
+
+                                            <img
+                                                id="previewWanita"
+                                                class="foto-preview"
+                                                alt="Foto Mempelai 2"
+                                                style="display:none;"
+                                            >
+
+                                        @endif
+
+                                    </div>
+
+                                </div>
+
+
+                                {{-- Orang Tua --}}
+                                <div class="col-md-6">
+
+                                    <label class="form-label">
+                                        Orang Tua Mempelai 2
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        name="orangtua_wanita"
+                                        value="{{ old('orangtua_wanita', $heroInvitation->orangtua_wanita ?? '') }}"
+                                        class="form-control @error('orangtua_wanita') is-invalid @enderror"
+                                        placeholder="Contoh: Bapak Adi & Ibu Yuli"
+                                    >
+
+                                    @error('orangtua_wanita')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+
+                                </div>
+
+
+                            </div>
+
+                        </div>
 
                     </div>
+
 
                 </div>
 
+
+                {{-- ====================== --}}
+                {{-- SIMPAN --}}
+                {{-- ====================== --}}
 
                 <div class="mt-4">
 
@@ -286,6 +444,7 @@
 
                 </div>
 
+
             </form>
 
         </div>
@@ -296,9 +455,9 @@
 
 
 
-{{-- ====================== --}}
+{{-- ====================================================== --}}
 {{-- MODAL CROPPER --}}
-{{-- ====================== --}}
+{{-- ====================================================== --}}
 
 <div
     class="modal fade"
@@ -310,6 +469,7 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
 
         <div class="modal-content">
+
 
             <div class="modal-header">
 
@@ -380,6 +540,7 @@
                 </button>
 
             </div>
+
 
         </div>
 
@@ -457,7 +618,9 @@
         }
 
 
-        const maxSize = 10 * 1024 * 1024;
+        const maxSize =
+            10 * 1024 * 1024;
+
 
         if (file.size > maxSize) {
 
@@ -497,7 +660,6 @@
 
             cropImage.src =
                 event.target.result;
-
 
             cropModal.show();
 

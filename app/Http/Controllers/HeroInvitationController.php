@@ -76,13 +76,13 @@ class HeroInvitationController extends Controller
         */
 
         $request->validate([
-            'nama_panggilan_pria' => 'required|string|max:255',
-            'nama_lengkap_pria' => 'required|string|max:255',
-            'orangtua_pria' => 'required|string|max:255',
+            'nama_panggilan_pria' => 'nullable|string|max:255',
+            'nama_lengkap_pria' => 'nullable|string|max:255',
+            'orangtua_pria' => 'nullable|string|max:255',
 
-            'nama_panggilan_wanita' => 'required|string|max:255',
-            'nama_lengkap_wanita' => 'required|string|max:255',
-            'orangtua_wanita' => 'required|string|max:255',
+            'nama_panggilan_wanita' => 'nullable|string|max:255',
+            'nama_lengkap_wanita' => 'nullable|string|max:255',
+            'orangtua_wanita' => 'nullable|string|max:255',
 
             // Hasil crop berupa Base64
             'foto_pria_cropped' => 'nullable|string',
