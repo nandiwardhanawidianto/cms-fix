@@ -37,9 +37,9 @@
         </div>
 
         <div class="mb-3">
-            <label>Nama Surat</label>
+            <label>Nama Surat <small class="text-muted">(opsional)</small></label>
             <input type="text" name="nama_surat" class="form-control"
-                   value="{{ old('nama_surat', $counting->nama_surat ?? '') }}" required>
+                   value="{{ old('nama_surat', $counting->nama_surat ?? '') }}">
         </div>
 
         <div class="mb-3">
@@ -48,8 +48,8 @@
         </div>
 
         <div class="mb-3">
-            <label>Deskripsi Surat (Bahasa Indonesia)</label>
-            <textarea name="deskripsi_surat" class="form-control" rows="4" required>{{ old('deskripsi_surat', $counting->deskripsi_surat ?? '') }}</textarea>
+            <label>Deskripsi Surat (Bahasa Indonesia) <small class="text-muted">(opsional)</small></label>
+            <textarea name="deskripsi_surat" class="form-control" rows="4">{{ old('deskripsi_surat', $counting->deskripsi_surat ?? '') }}</textarea>
         </div>
 
         <button type="submit" class="btn btn-primary">Simpan</button>
