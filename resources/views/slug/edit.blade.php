@@ -91,7 +91,6 @@
     <div class="tab-content mt-3" id="editTabContent">
         <div class="tab-pane fade show active" id="hero" role="tabpanel" aria-labelledby="hero-tab">
             @include('slug.partials.hero')
-            @include('slug.partials.default_photos')
         </div>
 
         <div class="tab-pane fade" id="json_import" role="tabpanel" aria-labelledby="json-import-tab">
