@@ -14,7 +14,7 @@ use App\Http\Controllers\{
     LoveStoryController,
     KirimKadoController,
     InvitationImportController
-    };
+};
 
 // ========== SLUG MANAGEMENT ==========
 Route::get('/', [SlugListController::class, 'index'])->name('slug.index');
@@ -25,6 +25,8 @@ Route::delete('/slug-list/{id}', [SlugListController::class, 'destroy'])->name('
 // ========== HERO & DETAIL UNDANGAN ==========
 Route::get('/slug-list/{id}/edit', [HeroInvitationController::class, 'edit'])->name('slug.edit');
 Route::post('/slug/{slug_id}/hero-invitation', [HeroInvitationController::class, 'store'])->name('hero.store');
+Route::post('/slug/{slug_id}/hero-default/{type}', [HeroInvitationController::class, 'useDefaultPhoto'])->name('hero.default.use');
+Route::post('/hero-default/{type}', [HeroInvitationController::class, 'storeDefaultPhoto'])->name('hero.default.store');
 
 // ========== JSON IMPORT ==========
 Route::post('/slug/{slug_id}/import-json/preview', [InvitationImportController::class, 'preview'])->name('import.preview');
@@ -54,9 +56,9 @@ Route::post('/slug/{slug_id}/kirim-kado', [KirimKadoController::class, 'store'])
 Route::delete('/slug/{slug_id}/kirim-kado', [KirimKadoController::class, 'delete'])->name('kirimkado.delete');
 
 // ========== LOVE STORY ==========
-Route::get('/slug/{slug_id}/love-story', [App\Http\Controllers\LoveStoryController::class, 'edit'])->name('LoveStory.edit');
-Route::post('/slug/{slug_id}/love-story', [App\Http\Controllers\LoveStoryController::class, 'store'])->name('LoveStory.store');
-route::delete('/slug/{slug_id}/love-story', [App\Http\Controllers\LoveStoryController::class, 'delete'])->name('LoveStory.delete');
+Route::get('/slug/{slug_id}/love-story', [LoveStoryController::class, 'edit'])->name('LoveStory.edit');
+Route::post('/slug/{slug_id}/love-story', [LoveStoryController::class, 'store'])->name('LoveStory.store');
+Route::delete('/slug/{slug_id}/love-story', [LoveStoryController::class, 'delete'])->name('LoveStory.delete');
 
 // ========== SONG MANAGEMENT ==========
 Route::resource('/slug/song', SongController::class);
@@ -64,4 +66,5 @@ Route::resource('/slug/song', SongController::class);
 // Song List (per slug)
 Route::get('/slug/{slug_list_id}/song-list', [SongListController::class, 'index'])->name('songlist.index');
 Route::post('/slug/{slug_list_id}/song-list', [SongListController::class, 'store'])->name('songlist.store');
+Route::post('/slug/{slug_list_id}/song-list/upload', [SongListController::class, 'storeUploadedSong'])->name('songlist.upload');
 Route::delete('/song-list/{songList}', [SongListController::class, 'destroy'])->name('songlist.destroy');
