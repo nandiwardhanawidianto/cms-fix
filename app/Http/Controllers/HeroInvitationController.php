@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Acara;
 use App\Models\Bank;
+use App\Models\Counting;
 use App\Models\Galeri;
 use App\Models\HeroInvitation;
 use App\Models\KirimKado;
@@ -24,6 +25,7 @@ class HeroInvitationController extends Controller
         $heroInvitation = HeroInvitation::where('slug_id', $id)->first();
 
         $acaras = Acara::where('slug_list_id', $id)->get();
+        $counting = Counting::where('slug_list_id', $id)->first();
         $galeri = Galeri::where('slug_list_id', $id)->first();
         $love_gifts = Lovegift::with('bank')->where('slug_list_id', $id)->get();
         $banks = Bank::all();
@@ -37,6 +39,7 @@ class HeroInvitationController extends Controller
             'slug_id' => $id,
             'heroInvitation' => $heroInvitation,
             'acaras' => $acaras,
+            'counting' => $counting,
             'galeri' => $galeri,
             'love_gifts' => $love_gifts,
             'kirimkado' => $kirimkado,
