@@ -26,16 +26,16 @@ class CountingController extends Controller
         SlugList::findOrFail($slug_id);
 
         $validated = $request->validate([
-            'nama_surat'      => 'required|string|max:255',
+            'nama_surat'      => 'nullable|string|max:255',
             'surat_arab'      => 'nullable|string',
-            'deskripsi_surat' => 'required|string',
+            'deskripsi_surat' => 'nullable|string',
             'foto_counting'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
         ]);
 
         $counting = Counting::firstOrNew(['slug_list_id' => $slug_id]);
-        $counting->nama_surat = $validated['nama_surat'];
+        $counting->nama_surat = $validated['nama_surat'] ?? '';
         $counting->surat_arab = $validated['surat_arab'] ?? null;
-        $counting->deskripsi_surat = $validated['deskripsi_surat'];
+        $counting->deskripsi_surat = $validated['deskripsi_surat'] ?? '';
 
         if ($request->hasFile('foto_counting')) {
             if ($counting->foto_counting && Storage::disk('public')->exists($counting->foto_counting)) {
