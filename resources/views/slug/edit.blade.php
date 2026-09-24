@@ -46,6 +46,22 @@
             </button>
         </li>
 
+        <!-- JSON Import -->
+        <li class="nav-item" role="presentation">
+            <button
+                class="nav-link"
+                id="json-import-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#json_import"
+                type="button"
+                role="tab"
+                aria-controls="json_import"
+                aria-selected="false"
+            >
+                Import JSON
+            </button>
+        </li>
+
         <!-- Acara -->
         <li class="nav-item" role="presentation">
             <button
@@ -189,6 +205,16 @@
             @include('slug.partials.hero')
         </div>
 
+        <!-- JSON Import -->
+        <div
+            class="tab-pane fade"
+            id="json_import"
+            role="tabpanel"
+            aria-labelledby="json-import-tab"
+        >
+            @include('slug.partials.json_import')
+        </div>
+
         <!-- Acara -->
         <div
             class="tab-pane fade"
@@ -281,6 +307,20 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const shouldOpenImport =
+            window.location.hash === '#json_import' ||
+            @json($errors->has('json_payload') || $errors->has('theme_override') || session()->has('import_preview'));
+
+        if (shouldOpenImport) {
+            const trigger = document.getElementById('json-import-tab');
+            if (trigger) {
+                bootstrap.Tab.getOrCreateInstance(trigger).show();
+            }
+        }
+    });
+</script>
 
 </body>
 </html>
