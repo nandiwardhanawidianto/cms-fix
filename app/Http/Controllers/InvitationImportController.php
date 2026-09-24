@@ -10,7 +10,6 @@ use App\Models\Lovegift;
 use App\Models\SlugList;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -41,48 +40,9 @@ class InvitationImportController extends Controller
         'gift_delivery',
     ];
 
-    /**
-     * Preview JSON for an existing invitation.
-     */
-    public function preview(Request $request, $slug_id)
-    {
-        $slug = SlugList::findOrFail($slug_id);
-        $payload = $this->validatedPayload($request);
-        $theme = $this->resolveTheme($payload, $request->input('theme_override'), false);
-        $this->validateBanks($payload);
-
-        return redirect()
-            ->to(route('slug.edit', $slug->id) . '#json_import')
-            ->with('import_preview', $this->buildPreview($payload, $theme))
-            ->with('import_json', $request->input('json_payload'))
-            ->with('import_theme_override', $request->input('theme_override'));
-    }
-
-    /**
-     * Import JSON into an existing invitation.
-     */
-    public function store(Request $request, $slug_id)
-    {
-        $slug = SlugList::findOrFail($slug_id);
-        $payload = $this->validatedPayload($request);
-        $theme = $this->resolveTheme($payload, $request->input('theme_override'), true);
-        $bankMap = $this->validateBanks($payload);
-
-        DB::transaction(function () use ($slug, $payload, $theme, $bankMap) {
-            $this->applyPayloadToSlug($slug, $payload, $theme, $bankMap);
-        });
-
-        return redirect()
-            ->to(route('slug.edit', $slug->id) . '#json_import')
-            ->with('success', 'Import JSON berhasil. Data undangan sudah masuk ke database dan tetap bisa diedit manual.');
-    }
-
-    /**
-     * Preview homepage JSON before creating a new invitation.
-     */
     public function previewCreate(Request $request)
     {
-        $payload = $this->validatedPayload($request, true);
+        $payload = $this->validatedPayload($request);
         $theme = $this->resolveTheme($payload, $request->input('theme_override'), false);
         $this->validateBanks($payload);
 
@@ -100,12 +60,9 @@ class InvitationImportController extends Controller
             ->with('create_import_theme_override', $request->input('theme_override'));
     }
 
-    /**
-     * Create the slug and all supported invitation data in one transaction.
-     */
     public function storeCreate(Request $request)
     {
-        $payload = $this->validatedPayload($request, true);
+        $payload = $this->validatedPayload($request);
         $theme = $this->resolveTheme($payload, $request->input('theme_override'), true);
         $bankMap = $this->validateBanks($payload);
         [$invitationName] = $this->deriveNewInvitationIdentity($payload);
@@ -126,11 +83,11 @@ class InvitationImportController extends Controller
             ->to(route('slug.edit', $slug->id) . '#hero')
             ->with(
                 'success',
-                "Undangan {$slug->nama} berhasil dibuat dari JSON. Slug: {$slug->slug}. Foto default dipakai otomatis jika tersedia."
+                "Undangan {$slug->nama} berhasil dibuat dari JSON. Slug: {$slug->slug}. Pilih foto Mempelai 1/2 dari Hero jika diperlukan."
             );
     }
 
-    private function validatedPayload(Request $request, bool $creating = false): array
+    private function validatedPayload(Request $request): array
     {
         $request->validate([
             'json_payload' => 'required|string',
@@ -159,19 +116,13 @@ class InvitationImportController extends Controller
             ]);
         }
 
-        if (!array_intersect(['mempelai_1', 'mempelai_2', 'events', 'love_gifts', 'gift_delivery'], array_keys($payload))) {
-            throw ValidationException::withMessages([
-                'json_payload' => 'JSON tidak berisi data undangan yang bisa diimpor.',
-            ]);
-        }
-
         $validator = Validator::make($payload, [
-            'order_number' => $creating ? 'required|string|max:100' : 'sometimes|nullable|string|max:100',
+            'order_number' => 'required|string|max:100',
             'theme' => 'nullable|string|max:50',
 
-            'mempelai_1' => $creating ? 'required|array' : 'sometimes|nullable|array',
+            'mempelai_1' => 'required|array',
             'mempelai_1.full_name' => 'nullable|string|max:255',
-            'mempelai_1.short_name' => 'nullable|string|max:255',
+            'mempelai_1.short_name' => 'required|string|max:255',
             'mempelai_1.parents' => 'nullable|string|max:255',
 
             'mempelai_2' => 'sometimes|nullable|array',
@@ -197,29 +148,19 @@ class InvitationImportController extends Controller
             'gift_delivery.address' => 'required_with:gift_delivery|string',
         ], [
             'events.*.date.date_format' => 'Tanggal acara wajib memakai format YYYY-MM-DD, contoh 2026-10-01.',
-            'order_number.required' => 'Nomor pesanan wajib ada di JSON untuk membuat undangan baru.',
-            'mempelai_1.required' => 'Mempelai 1 wajib ada untuk membuat undangan baru.',
+            'order_number.required' => 'Nomor pesanan wajib ada di JSON.',
+            'mempelai_1.required' => 'Mempelai 1 wajib ada.',
+            'mempelai_1.short_name.required' => 'Nama pendek Mempelai 1 wajib ada karena dipakai untuk membuat nama dan slug.',
         ]);
 
-        $validator->after(function ($validator) use ($payload, $creating) {
-            if (array_key_exists('mempelai_2', $payload)
-                && $payload['mempelai_2'] !== null
-                && !array_key_exists('mempelai_1', $payload)) {
-                $validator->errors()->add('json_payload', 'Mempelai 2 tidak boleh ada tanpa Mempelai 1.');
-            }
-
-            if (!$creating) {
-                return;
-            }
-
-            $mempelai1 = $payload['mempelai_1'] ?? null;
-            if (!is_array($mempelai1) || blank($mempelai1['short_name'] ?? null)) {
-                $validator->errors()->add('json_payload', 'Nama pendek Mempelai 1 wajib diisi karena dipakai untuk membuat nama dan slug.');
-            }
-
+        $validator->after(function ($validator) use ($payload) {
             $mempelai2 = $payload['mempelai_2'] ?? null;
+
             if (is_array($mempelai2) && !blank($mempelai2) && blank($mempelai2['short_name'] ?? null)) {
-                $validator->errors()->add('json_payload', 'Jika Mempelai 2 diisi, nama pendek Mempelai 2 wajib ada untuk membuat nama dan slug.');
+                $validator->errors()->add(
+                    'json_payload',
+                    'Jika Mempelai 2 diisi, nama pendek Mempelai 2 wajib ada untuk membuat nama dan slug.'
+                );
             }
         });
 
@@ -288,31 +229,19 @@ class InvitationImportController extends Controller
     private function applyPayloadToSlug(SlugList $slug, array $payload, string $theme, array $bankMap): void
     {
         $slug->theme = $theme;
-
-        if (array_key_exists('order_number', $payload) && filled($payload['order_number'])) {
-            $slug->keterangan = trim($payload['order_number']);
-        }
-
+        $slug->keterangan = trim($payload['order_number']);
         $slug->save();
 
-        if (array_key_exists('mempelai_1', $payload) || array_key_exists('mempelai_2', $payload)) {
-            $hero = HeroInvitation::firstOrNew(['slug_id' => $slug->id]);
+        $hero = HeroInvitation::firstOrNew(['slug_id' => $slug->id]);
 
-            // Kolom pria/wanita adalah nama legacy di database.
-            // Importer memperlakukannya hanya sebagai slot urutan: Mempelai 1 lalu Mempelai 2.
-            if (array_key_exists('mempelai_1', $payload)) {
-                $this->applyPerson($hero, $payload['mempelai_1'], 'pria');
-                $this->applyDefaultPhotoIfNeeded($hero, $payload['mempelai_1'], 'pria');
-            }
+        $this->applyPerson($hero, $payload['mempelai_1'], 'pria');
 
-            if (array_key_exists('mempelai_2', $payload)) {
-                $this->applyPerson($hero, $payload['mempelai_2'], 'wanita');
-                $this->applyDefaultPhotoIfNeeded($hero, $payload['mempelai_2'], 'wanita');
-            }
-
-            $hero->slug_id = $slug->id;
-            $hero->save();
+        if (array_key_exists('mempelai_2', $payload)) {
+            $this->applyPerson($hero, $payload['mempelai_2'], 'wanita');
         }
+
+        $hero->slug_id = $slug->id;
+        $hero->save();
 
         if (array_key_exists('events', $payload)) {
             Acara::where('slug_list_id', $slug->id)->delete();
@@ -376,31 +305,6 @@ class InvitationImportController extends Controller
                 $hero->{$modelField} = $person[$jsonKey];
             }
         }
-    }
-
-    private function applyDefaultPhotoIfNeeded(HeroInvitation $hero, ?array $person, string $type): void
-    {
-        if ($person === null) {
-            return;
-        }
-
-        $column = $type === 'pria' ? 'foto_pria' : 'foto_wanita';
-
-        if (filled($hero->{$column})) {
-            return;
-        }
-
-        $defaultPath = $this->findDefaultPhoto($type);
-
-        if ($defaultPath) {
-            $hero->{$column} = $defaultPath;
-        }
-    }
-
-    private function findDefaultPhoto(string $type): ?string
-    {
-        return collect(Storage::disk('public')->files('hero-defaults'))
-            ->first(fn (string $path) => str_starts_with(basename($path), $type . '.'));
     }
 
     private function deriveNewInvitationIdentity(array $payload): array
