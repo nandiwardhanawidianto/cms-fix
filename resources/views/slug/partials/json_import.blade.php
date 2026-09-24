@@ -221,8 +221,13 @@
 
                 <div class="mb-3">
                     <label for="confirm_theme_override" class="form-label">Theme untuk Import</label>
-                    <select id="confirm_theme_override" name="theme_override" class="form-select">
-                        <option value="">Gunakan theme dari JSON</option>
+                    <select
+                        id="confirm_theme_override"
+                        name="theme_override"
+                        class="form-select"
+                        @if(!$preview['theme']) required @endif
+                    >
+                        <option value="">{{ $preview['theme'] ? 'Gunakan theme dari JSON' : 'Pilih theme' }}</option>
                         @foreach($themes as $theme)
                             <option value="{{ $theme }}" @selected($themeValue === $theme)>
                                 {{ ucfirst($theme) }}
