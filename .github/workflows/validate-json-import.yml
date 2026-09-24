@@ -1,0 +1,39 @@
+name: Validate JSON Import Branch
+
+on:
+  push:
+    branches:
+      - feature/json-invitation-import
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_sqlite
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Validate Composer metadata
+        run: composer validate --strict
+
+      - name: PHP syntax check
+        run: find app routes -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Laravel route boot check
+        run: php artisan route:list
+
+      - name: Compile Blade views
+        run: php artisan view:cache
