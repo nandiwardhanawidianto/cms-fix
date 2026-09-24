@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\SlugList;
+use Illuminate\Support\Facades\Storage;
 
 class SlugListController extends Controller
 {
@@ -20,8 +21,14 @@ class SlugListController extends Controller
         }
 
         $slugs = $query->orderBy('id', 'desc')->get();
+        $defaultFotoMempelai1 = $this->findDefaultPhoto('pria');
+        $defaultFotoMempelai2 = $this->findDefaultPhoto('wanita');
 
-        return view('slug.index', compact('slugs'));
+        return view('slug.index', compact(
+            'slugs',
+            'defaultFotoMempelai1',
+            'defaultFotoMempelai2'
+        ));
     }
 
     // Simpan slug baru
@@ -30,13 +37,13 @@ class SlugListController extends Controller
         $request->validate([
             'nama' => 'required|string|max:255',
             'keterangan' => 'nullable|string|max:255',
-            'theme' => 'nullable|string|max:50', // ✅ tambahkan validasi theme
+            'theme' => 'nullable|string|max:50',
         ]);
 
         SlugList::create([
             'nama' => $request->nama,
             'keterangan' => $request->keterangan,
-            'theme' => $request->theme ?? 'violet', // ✅ default theme violet
+            'theme' => $request->theme ?? 'violet',
         ]);
 
         return redirect()->route('slug.index')->with('success', 'Slug berhasil ditambahkan!');
@@ -62,7 +69,7 @@ class SlugListController extends Controller
         $request->validate([
             'nama' => 'required|string|max:255',
             'keterangan' => 'nullable|string|max:255',
-            'theme' => 'nullable|string|max:50', // ✅ validasi tambahan
+            'theme' => 'nullable|string|max:50',
         ]);
 
         $slug = SlugList::findOrFail($id);
@@ -70,9 +77,15 @@ class SlugListController extends Controller
         $slug->update([
             'nama' => $request->nama,
             'keterangan' => $request->keterangan,
-            'theme' => $request->theme ?? $slug->theme, // ✅ update theme
+            'theme' => $request->theme ?? $slug->theme,
         ]);
 
         return redirect()->route('slug.index')->with('success', 'Slug berhasil diperbarui!');
+    }
+
+    private function findDefaultPhoto(string $type): ?string
+    {
+        return collect(Storage::disk('public')->files('hero-defaults'))
+            ->first(fn (string $path) => str_starts_with(basename($path), $type . '.'));
     }
 }
