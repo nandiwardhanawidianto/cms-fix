@@ -42,6 +42,7 @@ Route::post('/slug/{slug_id}/counting', [CountingController::class, 'store'])->n
 
 // ========== GALERI ==========
 Route::post('/slug/{slug_id}/galleri', [GaleriController::class, 'store'])->name('galeri.store');
+Route::delete('/slug/{slug_id}/galleri/photo', [GaleriController::class, 'destroyPhoto'])->name('galeri.photo.destroy');
 
 // ========== MASTER BANK CMS ==========
 Route::resource('/slug/banks', BankController::class);
