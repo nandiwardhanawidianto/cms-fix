@@ -34,12 +34,6 @@
         </li>
 
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="json-import-tab" data-bs-toggle="tab" data-bs-target="#json_import" type="button" role="tab" aria-controls="json_import" aria-selected="false">
-                Import JSON
-            </button>
-        </li>
-
-        <li class="nav-item" role="presentation">
             <button class="nav-link" id="acara-tab" data-bs-toggle="tab" data-bs-target="#acara" type="button" role="tab" aria-controls="acara" aria-selected="false">
                 Acara
             </button>
@@ -93,10 +87,6 @@
             @include('slug.partials.hero')
         </div>
 
-        <div class="tab-pane fade" id="json_import" role="tabpanel" aria-labelledby="json-import-tab">
-            @include('slug.partials.json_import')
-        </div>
-
         <div class="tab-pane fade" id="acara" role="tabpanel" aria-labelledby="acara-tab">
             @include('slug.partials.acara')
         </div>
@@ -140,24 +130,16 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const shouldOpenImport =
-            window.location.hash === '#json_import' ||
-            @json($errors->has('json_payload') || $errors->has('theme_override') || session()->has('import_preview'));
+        const hash = window.location.hash;
 
-        if (shouldOpenImport) {
-            const trigger = document.getElementById('json-import-tab');
-            if (trigger) {
-                bootstrap.Tab.getOrCreateInstance(trigger).show();
-            }
+        if (!hash) {
             return;
         }
 
-        const hash = window.location.hash;
-        if (hash) {
-            const targetButton = document.querySelector(`[data-bs-target="${hash}"]`);
-            if (targetButton) {
-                bootstrap.Tab.getOrCreateInstance(targetButton).show();
-            }
+        const targetButton = document.querySelector(`[data-bs-target="${hash}"]`);
+
+        if (targetButton) {
+            bootstrap.Tab.getOrCreateInstance(targetButton).show();
         }
     });
 </script>
