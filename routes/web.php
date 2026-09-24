@@ -29,6 +29,11 @@ Route::post('/slug/{slug_id}/hero-default/{type}', [HeroInvitationController::cl
 Route::post('/hero-default/{type}', [HeroInvitationController::class, 'storeDefaultPhoto'])->name('hero.default.store');
 
 // ========== JSON IMPORT ==========
+// Homepage flow: creates slug + invitation data in one transaction.
+Route::post('/import-json/preview', [InvitationImportController::class, 'previewCreate'])->name('import.create.preview');
+Route::post('/import-json', [InvitationImportController::class, 'storeCreate'])->name('import.create.store');
+
+// Existing-slug flow remains available for updating an invitation from JSON.
 Route::post('/slug/{slug_id}/import-json/preview', [InvitationImportController::class, 'preview'])->name('import.preview');
 Route::post('/slug/{slug_id}/import-json', [InvitationImportController::class, 'store'])->name('import.store');
 
