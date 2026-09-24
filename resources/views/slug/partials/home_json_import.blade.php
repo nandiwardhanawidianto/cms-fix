@@ -1,7 +1,7 @@
 @php
     $createPreview = session('create_import_preview');
     $createThemeValue = old('theme_override', session('create_import_theme_override'));
-    $createThemes = ['violet', 'sage', 'brown', 'jawa', 'bali', 'pink', 'biru', 'hitam', 'dayak', 'bugis'];
+    $createThemes = ['violet', 'sage', 'brown', 'jawa', 'bali', 'pink', 'biru', 'hitam', 'hitam2', 'dayak', 'bugis'];
 @endphp
 
 <div class="modal fade" id="jsonCreateModal" tabindex="-1" aria-labelledby="jsonCreateModalLabel" aria-hidden="true">
