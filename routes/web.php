@@ -12,8 +12,9 @@ use App\Http\Controllers\{
     SongController,
     SongListController,
     LoveStoryController,
-    KirimKadoController
-    };
+    KirimKadoController,
+    InvitationImportController
+};
 
 // ========== SLUG MANAGEMENT ==========
 Route::get('/', [SlugListController::class, 'index'])->name('slug.index');
@@ -24,6 +25,12 @@ Route::delete('/slug-list/{id}', [SlugListController::class, 'destroy'])->name('
 // ========== HERO & DETAIL UNDANGAN ==========
 Route::get('/slug-list/{id}/edit', [HeroInvitationController::class, 'edit'])->name('slug.edit');
 Route::post('/slug/{slug_id}/hero-invitation', [HeroInvitationController::class, 'store'])->name('hero.store');
+Route::post('/hero-default/{picture}', [HeroInvitationController::class, 'storeDefaultPhoto'])->name('hero.default.store');
+
+// ========== JSON IMPORT ==========
+// JSON import only lives on the homepage and creates the invitation + slug.
+Route::post('/import-json/preview', [InvitationImportController::class, 'previewCreate'])->name('import.create.preview');
+Route::post('/import-json', [InvitationImportController::class, 'storeCreate'])->name('import.create.store');
 
 // ========== ACARA ==========
 Route::get('/slug/{slug_id}/acara', [AcaraController::class, 'edit'])->name('acara.edit');
@@ -35,6 +42,7 @@ Route::post('/slug/{slug_id}/counting', [CountingController::class, 'store'])->n
 
 // ========== GALERI ==========
 Route::post('/slug/{slug_id}/galleri', [GaleriController::class, 'store'])->name('galeri.store');
+Route::delete('/slug/{slug_id}/galleri/photo', [GaleriController::class, 'destroyPhoto'])->name('galeri.photo.destroy');
 
 // ========== MASTER BANK CMS ==========
 Route::resource('/slug/banks', BankController::class);
@@ -49,10 +57,9 @@ Route::post('/slug/{slug_id}/kirim-kado', [KirimKadoController::class, 'store'])
 Route::delete('/slug/{slug_id}/kirim-kado', [KirimKadoController::class, 'delete'])->name('kirimkado.delete');
 
 // ========== LOVE STORY ==========
-Route::get('/slug/{slug_id}/love-story', [App\Http\Controllers\LoveStoryController::class, 'edit'])->name('LoveStory.edit');
-Route::post('/slug/{slug_id}/love-story', [App\Http\Controllers\LoveStoryController::class, 'store'])->name('LoveStory.store');
-route::delete('/slug/{slug_id}/love-story', [App\Http\Controllers\LoveStoryController::class, 'delete'])->name('LoveStory.delete');
-
+Route::get('/slug/{slug_id}/love-story', [LoveStoryController::class, 'edit'])->name('LoveStory.edit');
+Route::post('/slug/{slug_id}/love-story', [LoveStoryController::class, 'store'])->name('LoveStory.store');
+Route::delete('/slug/{slug_id}/love-story', [LoveStoryController::class, 'delete'])->name('LoveStory.delete');
 
 // ========== SONG MANAGEMENT ==========
 Route::resource('/slug/song', SongController::class);
@@ -60,7 +67,5 @@ Route::resource('/slug/song', SongController::class);
 // Song List (per slug)
 Route::get('/slug/{slug_list_id}/song-list', [SongListController::class, 'index'])->name('songlist.index');
 Route::post('/slug/{slug_list_id}/song-list', [SongListController::class, 'store'])->name('songlist.store');
+Route::post('/slug/{slug_list_id}/song-list/upload', [SongListController::class, 'storeUploadedSong'])->name('songlist.upload');
 Route::delete('/song-list/{songList}', [SongListController::class, 'destroy'])->name('songlist.destroy');
-
-
-

@@ -200,6 +200,7 @@ class HeroInvitationApiController extends Controller
             'nama_surat' => $counting->nama_surat,
             'deskripsi_surat' => $counting->deskripsi_surat,
             'surat_arab' => $counting->surat_arab,
+            'foto_counting' => $counting->foto_counting ? asset('storage/' . $counting->foto_counting) : null,
             'created_at' => $counting->created_at?->toISOString(),
             'updated_at' => $counting->updated_at?->toISOString(),
         ];

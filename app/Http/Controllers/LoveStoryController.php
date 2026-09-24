@@ -12,7 +12,6 @@ class LoveStoryController extends Controller
     public function edit($slug_id)
     {
         $slug = SlugList::findOrFail($slug_id);
-
         $lovestory = love_story::where('slug_list_id', $slug_id)->first();
 
         return view('slug.love_story', compact('slug_id', 'lovestory'));
@@ -28,9 +27,15 @@ class LoveStoryController extends Controller
             'menjalin_hubungan'       => 'nullable|string',
             'lamaran'                 => 'nullable|string',
 
-            'gambar_awal'         => 'nullable|image|max:2048',
-            'gambar_hubungan'     => 'nullable|image|max:2048',
-            'gambar_lamaran'      => 'nullable|image|max:2048',
+            // Backward compatibility for old plain file upload forms.
+            'gambar_awal'             => 'nullable|image|max:10240',
+            'gambar_hubungan'         => 'nullable|image|max:10240',
+            'gambar_lamaran'          => 'nullable|image|max:10240',
+
+            // New cropped images from the CMS cropper.
+            'gambar_awal_cropped'     => 'nullable|string',
+            'gambar_hubungan_cropped' => 'nullable|string',
+            'gambar_lamaran_cropped'  => 'nullable|string',
         ]);
 
         $lovestory = love_story::where('slug_list_id', $slug_id)->first();
@@ -40,47 +45,50 @@ class LoveStoryController extends Controller
             $lovestory->slug_list_id = $slug_id;
         }
 
-        // ============================
-        // 🔥 GANTI GAMBAR (Replace lama)
-        // ============================
+        $photoFields = [
+            'gambar_awal' => 'gambar_awal_cropped',
+            'gambar_hubungan' => 'gambar_hubungan_cropped',
+            'gambar_lamaran' => 'gambar_lamaran_cropped',
+        ];
 
-        // Gambar Awal
-        if ($request->hasFile('gambar_awal')) {
+        foreach ($photoFields as $column => $croppedField) {
+            $newPath = null;
 
-            // hapus gambar lama
-            if ($lovestory->gambar_awal && Storage::disk('public')->exists($lovestory->gambar_awal)) {
-                Storage::disk('public')->delete($lovestory->gambar_awal);
+            if ($request->filled($croppedField)) {
+                $newPath = $this->saveBase64Image(
+                    $request->input($croppedField),
+                    'love_story'
+                );
+
+                if (!$newPath) {
+                    return redirect()
+                        ->to(route('slug.edit', $slug_id) . '#love_story')
+                        ->withErrors([$croppedField => 'Hasil crop foto tidak valid. Silakan pilih dan crop ulang.'])
+                        ->withInput();
+                }
+            } elseif ($request->hasFile($column)) {
+                $newPath = $request->file($column)->store('love_story', 'public');
             }
 
-            // upload yang baru
-            $data['gambar_awal'] = $request->file('gambar_awal')->store('love_story', 'public');
-        }
+            if ($newPath) {
+                $oldPath = $lovestory->{$column};
 
-        // Gambar Hubungan
-        if ($request->hasFile('gambar_hubungan')) {
+                if ($oldPath && Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
 
-            if ($lovestory->gambar_hubungan && Storage::disk('public')->exists($lovestory->gambar_hubungan)) {
-                Storage::disk('public')->delete($lovestory->gambar_hubungan);
+                $data[$column] = $newPath;
             }
 
-            $data['gambar_hubungan'] = $request->file('gambar_hubungan')->store('love_story', 'public');
+            unset($data[$croppedField]);
         }
 
-        // Gambar Lamaran
-        if ($request->hasFile('gambar_lamaran')) {
-
-            if ($lovestory->gambar_lamaran && Storage::disk('public')->exists($lovestory->gambar_lamaran)) {
-                Storage::disk('public')->delete($lovestory->gambar_lamaran);
-            }
-
-            $data['gambar_lamaran'] = $request->file('gambar_lamaran')->store('love_story', 'public');
-        }
-
-        // Simpan data
         $lovestory->fill($data);
         $lovestory->save();
 
-        return redirect()->back()->with('success', 'Love Story berhasil disimpan!');
+        return redirect()
+            ->to(route('slug.edit', $slug_id) . '#love_story')
+            ->with('success', 'Love Story berhasil disimpan!');
     }
 
     public function delete($slug_id)
@@ -88,21 +96,44 @@ class LoveStoryController extends Controller
         $lovestory = love_story::where('slug_list_id', $slug_id)->first();
 
         if ($lovestory) {
+            foreach (['gambar_awal', 'gambar_hubungan', 'gambar_lamaran'] as $column) {
+                $path = $lovestory->{$column};
 
-            // Hapus semua file gambar
-            if ($lovestory->gambar_awal) {
-                Storage::disk('public')->delete($lovestory->gambar_awal);
-            }
-            if ($lovestory->gambar_hubungan) {
-                Storage::disk('public')->delete($lovestory->gambar_hubungan);
-            }
-            if ($lovestory->gambar_lamaran) {
-                Storage::disk('public')->delete($lovestory->gambar_lamaran);
+                if ($path && Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->delete($path);
+                }
             }
 
             $lovestory->delete();
         }
 
-        return redirect()->back()->with('success', 'Love Story berhasil dihapus!');
+        return redirect()
+            ->to(route('slug.edit', $slug_id) . '#love_story')
+            ->with('success', 'Love Story berhasil dihapus!');
+    }
+
+    private function saveBase64Image(string $base64Image, string $folder): ?string
+    {
+        if (!preg_match('/^data:image\/(jpeg|jpg|png|webp);base64,/', $base64Image)) {
+            return null;
+        }
+
+        $imageData = preg_replace(
+            '/^data:image\/(jpeg|jpg|png|webp);base64,/',
+            '',
+            $base64Image
+        );
+
+        $decoded = base64_decode(str_replace(' ', '+', $imageData), true);
+
+        if ($decoded === false) {
+            return null;
+        }
+
+        $path = $folder . '/' . time() . '_' . uniqid() . '.jpg';
+
+        return Storage::disk('public')->put($path, $decoded)
+            ? $path
+            : null;
     }
 }

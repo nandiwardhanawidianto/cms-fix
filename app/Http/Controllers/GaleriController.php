@@ -165,6 +165,58 @@ class GaleriController extends Controller
 
     /*
     |--------------------------------------------------------------------------
+    | HAPUS SATU FOTO GALERI
+    |--------------------------------------------------------------------------
+    */
+
+    public function destroyPhoto(Request $request, $slug_id)
+    {
+        $validated = $request->validate([
+            'carousel' => 'required|in:atas,bawah',
+            'image_path' => 'required|string',
+        ]);
+
+        $galeri = Galeri::where('slug_list_id', $slug_id)->firstOrFail();
+        $column = $validated['carousel'] === 'atas'
+            ? 'carousel_atas'
+            : 'carousel_bawah';
+
+        $images = json_decode($galeri->{$column} ?? '[]', true);
+
+        if (!is_array($images)) {
+            $images = [];
+        }
+
+        $index = array_search($validated['image_path'], $images, true);
+
+        if ($index === false) {
+            return redirect()
+                ->to(route('slug.edit', $slug_id) . '#galeri')
+                ->with('error', 'Foto galeri tidak ditemukan.');
+        }
+
+        $path = $images[$index];
+        unset($images[$index]);
+
+        $galeri->{$column} = json_encode(array_values($images));
+        $galeri->save();
+
+        if (Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
+
+        $label = $validated['carousel'] === 'atas'
+            ? 'Carousel Atas'
+            : 'Carousel Bawah';
+
+        return redirect()
+            ->to(route('slug.edit', $slug_id) . '#galeri')
+            ->with('success', 'Foto dari ' . $label . ' berhasil dihapus.');
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
     | SIMPAN HASIL CROP BASE64
     |--------------------------------------------------------------------------
     */
