@@ -44,8 +44,8 @@ class HeroInvitationController extends Controller
             'songs' => $songs,
             'selectedSongLists' => $selectedSongLists,
             'lovestory' => $lovestory,
-            'defaultFotoPria' => $this->findDefaultPhoto('pria'),
-            'defaultFotoWanita' => $this->findDefaultPhoto('wanita'),
+            'picture1Path' => $this->findGlobalPicture('picture1'),
+            'picture2Path' => $this->findGlobalPicture('picture2'),
         ]);
     }
 
@@ -58,10 +58,13 @@ class HeroInvitationController extends Controller
             'nama_panggilan_wanita' => 'nullable|string|max:255',
             'nama_lengkap_wanita' => 'nullable|string|max:255',
             'orangtua_wanita' => 'nullable|string|max:255',
+            'foto_pria_source' => 'nullable|in:keep,upload,picture1,picture2',
+            'foto_wanita_source' => 'nullable|in:keep,upload,picture1,picture2',
             'foto_pria_cropped' => 'nullable|string',
             'foto_wanita_cropped' => 'nullable|string',
         ]);
 
+        SlugList::findOrFail($slug_id);
         $heroInvitation = HeroInvitation::firstOrNew(['slug_id' => $slug_id]);
 
         $heroInvitation->nama_panggilan_pria = $request->nama_panggilan_pria;
@@ -71,112 +74,63 @@ class HeroInvitationController extends Controller
         $heroInvitation->nama_lengkap_wanita = $request->nama_lengkap_wanita;
         $heroInvitation->orangtua_wanita = $request->orangtua_wanita;
 
-        if ($request->filled('foto_pria_cropped')) {
-            $fotoPria = $this->saveCroppedImage($request->foto_pria_cropped, 'pria');
+        $this->applyPhotoSelection(
+            $heroInvitation,
+            'foto_pria',
+            $request->input('foto_pria_source', 'keep'),
+            $request->input('foto_pria_cropped'),
+            'pria'
+        );
 
-            if ($fotoPria) {
-                $this->deleteOwnedPhoto($heroInvitation->foto_pria);
-                $heroInvitation->foto_pria = $fotoPria;
-            }
-        }
-
-        if ($request->filled('foto_wanita_cropped')) {
-            $fotoWanita = $this->saveCroppedImage($request->foto_wanita_cropped, 'wanita');
-
-            if ($fotoWanita) {
-                $this->deleteOwnedPhoto($heroInvitation->foto_wanita);
-                $heroInvitation->foto_wanita = $fotoWanita;
-            }
-        }
-
-        $this->syncAutomaticDefaultPhoto($heroInvitation, 'pria');
-        $this->syncAutomaticDefaultPhoto($heroInvitation, 'wanita');
+        $this->applyPhotoSelection(
+            $heroInvitation,
+            'foto_wanita',
+            $request->input('foto_wanita_source', 'keep'),
+            $request->input('foto_wanita_cropped'),
+            'wanita'
+        );
 
         $heroInvitation->slug_id = $slug_id;
-        $heroInvitation->save();
-
-        return back()->with('success', 'Hero & Invitation berhasil disimpan!');
-    }
-
-    /**
-     * Kept for backwards compatibility with older UI links.
-     * New workflow applies defaults automatically.
-     */
-    public function useDefaultPhoto($slug_id, string $type)
-    {
-        $this->validatePhotoType($type);
-        SlugList::findOrFail($slug_id);
-
-        $defaultPath = $this->findDefaultPhoto($type);
-
-        if (!$defaultPath) {
-            throw ValidationException::withMessages([
-                'default_photo' => 'Foto default belum diupload untuk mempelai ini.',
-            ]);
-        }
-
-        $heroInvitation = HeroInvitation::firstOrNew(['slug_id' => $slug_id]);
-        $column = $type === 'pria' ? 'foto_pria' : 'foto_wanita';
-
-        $this->deleteOwnedPhoto($heroInvitation->{$column});
-
-        $heroInvitation->slug_id = $slug_id;
-        $heroInvitation->{$column} = $defaultPath;
         $heroInvitation->save();
 
         return redirect()
             ->to(route('slug.edit', $slug_id) . '#hero')
-            ->with('success', 'Foto default berhasil dipakai untuk undangan ini.');
+            ->with('success', 'Hero & Invitation berhasil disimpan!');
     }
 
-    public function storeDefaultPhoto(Request $request, string $type)
+    public function storeDefaultPhoto(Request $request, string $picture)
     {
-        $this->validatePhotoType($type);
+        $this->validatePictureKey($picture);
 
         $request->validate([
             'default_photo' => 'required|image|mimes:jpg,jpeg,png|max:10240',
         ]);
 
         $disk = Storage::disk('public');
-        $oldPaths = $this->defaultPhotoPaths($type);
+        $oldPaths = $this->globalPicturePaths($picture);
         $extension = strtolower($request->file('default_photo')->extension());
+
         $newPath = $request->file('default_photo')->storeAs(
             'hero-defaults',
-            $type . '.' . $extension,
+            $picture . '.' . $extension,
             'public'
         );
 
         if (!$newPath) {
             throw ValidationException::withMessages([
-                'default_photo' => 'Foto default gagal disimpan.',
+                'default_photo' => 'Gambar gagal disimpan.',
             ]);
         }
 
-        $column = $type === 'pria' ? 'foto_pria' : 'foto_wanita';
-        $fullNameColumn = $type === 'pria' ? 'nama_lengkap_pria' : 'nama_lengkap_wanita';
-        $shortNameColumn = $type === 'pria' ? 'nama_panggilan_pria' : 'nama_panggilan_wanita';
+        if ($oldPaths) {
+            HeroInvitation::whereIn('foto_pria', $oldPaths)->update([
+                'foto_pria' => $newPath,
+            ]);
 
-        HeroInvitation::where(function ($query) use ($column, $fullNameColumn, $shortNameColumn, $oldPaths) {
-            if ($oldPaths) {
-                $query->whereIn($column, $oldPaths)
-                    ->orWhere(function ($emptyPhoto) use ($column, $fullNameColumn, $shortNameColumn) {
-                        $emptyPhoto->whereNull($column)
-                            ->where(function ($person) use ($fullNameColumn, $shortNameColumn) {
-                                $person->whereNotNull($fullNameColumn)
-                                    ->orWhereNotNull($shortNameColumn);
-                            });
-                    });
-                return;
-            }
-
-            $query->whereNull($column)
-                ->where(function ($person) use ($fullNameColumn, $shortNameColumn) {
-                    $person->whereNotNull($fullNameColumn)
-                        ->orWhereNotNull($shortNameColumn);
-                });
-        })->update([
-            $column => $newPath,
-        ]);
+            HeroInvitation::whereIn('foto_wanita', $oldPaths)->update([
+                'foto_wanita' => $newPath,
+            ]);
+        }
 
         foreach ($oldPaths as $oldPath) {
             if ($oldPath !== $newPath && $disk->exists($oldPath)) {
@@ -184,12 +138,56 @@ class HeroInvitationController extends Controller
             }
         }
 
+        $label = $picture === 'picture1' ? 'Picture 1' : 'Picture 2';
+
         return redirect()
             ->to(route('slug.index') . '#default-photos')
-            ->with(
-                'success',
-                'Foto default ' . ($type === 'pria' ? 'Mempelai 1' : 'Mempelai 2') . ' berhasil disimpan. Undangan tanpa foto custom otomatis memakai default ini.'
-            );
+            ->with('success', $label . ' berhasil disimpan.');
+    }
+
+    private function applyPhotoSelection(
+        HeroInvitation $heroInvitation,
+        string $column,
+        string $source,
+        ?string $croppedImage,
+        string $uploadPrefix
+    ): void {
+        if ($source === 'keep') {
+            return;
+        }
+
+        if ($source === 'upload') {
+            if (!$croppedImage) {
+                throw ValidationException::withMessages([
+                    $column . '_cropped' => 'Pilih dan crop foto terlebih dahulu.',
+                ]);
+            }
+
+            $newPath = $this->saveCroppedImage($croppedImage, $uploadPrefix);
+
+            if (!$newPath) {
+                throw ValidationException::withMessages([
+                    $column . '_cropped' => 'Foto hasil crop tidak valid.',
+                ]);
+            }
+
+            $this->deleteOwnedPhoto($heroInvitation->{$column});
+            $heroInvitation->{$column} = $newPath;
+            return;
+        }
+
+        if (in_array($source, ['picture1', 'picture2'], true)) {
+            $picturePath = $this->findGlobalPicture($source);
+
+            if (!$picturePath) {
+                throw ValidationException::withMessages([
+                    $column . '_source' => ($source === 'picture1' ? 'Picture 1' : 'Picture 2') . ' belum diupload dari halaman Management Undangan.',
+                ]);
+            }
+
+            $this->deleteOwnedPhoto($heroInvitation->{$column});
+            $heroInvitation->{$column} = $picturePath;
+        }
     }
 
     private function saveCroppedImage($base64Image, $jenis)
@@ -216,56 +214,42 @@ class HeroInvitationController extends Controller
         return $filename;
     }
 
-    private function validatePhotoType(string $type): void
+    private function validatePictureKey(string $picture): void
     {
-        if (!in_array($type, ['pria', 'wanita'], true)) {
+        if (!in_array($picture, ['picture1', 'picture2'], true)) {
             abort(404);
         }
     }
 
-    private function findDefaultPhoto(string $type): ?string
+    private function findGlobalPicture(string $picture): ?string
     {
-        return $this->defaultPhotoPaths($type)[0] ?? null;
+        return $this->globalPicturePaths($picture)[0] ?? null;
     }
 
-    private function defaultPhotoPaths(string $type): array
+    private function globalPicturePaths(string $picture): array
     {
+        $legacyName = $picture === 'picture1' ? 'pria' : 'wanita';
+
         return collect(Storage::disk('public')->files('hero-defaults'))
-            ->filter(fn (string $path) => str_starts_with(basename($path), $type . '.'))
+            ->filter(function (string $path) use ($picture, $legacyName) {
+                $base = basename($path);
+
+                return str_starts_with($base, $picture . '.')
+                    || str_starts_with($base, $legacyName . '.');
+            })
+            ->sortBy(fn (string $path) => str_starts_with(basename($path), $picture . '.') ? 0 : 1)
             ->values()
             ->all();
     }
 
-    private function syncAutomaticDefaultPhoto(HeroInvitation $heroInvitation, string $type): void
-    {
-        $photoColumn = $type === 'pria' ? 'foto_pria' : 'foto_wanita';
-        $fullNameColumn = $type === 'pria' ? 'nama_lengkap_pria' : 'nama_lengkap_wanita';
-        $shortNameColumn = $type === 'pria' ? 'nama_panggilan_pria' : 'nama_panggilan_wanita';
-        $hasPerson = filled($heroInvitation->{$fullNameColumn}) || filled($heroInvitation->{$shortNameColumn});
-
-        if (!$hasPerson) {
-            if ($this->isSharedDefaultPhoto($heroInvitation->{$photoColumn})) {
-                $heroInvitation->{$photoColumn} = null;
-            }
-            return;
-        }
-
-        if (!filled($heroInvitation->{$photoColumn})) {
-            $defaultPath = $this->findDefaultPhoto($type);
-            if ($defaultPath) {
-                $heroInvitation->{$photoColumn} = $defaultPath;
-            }
-        }
-    }
-
-    private function isSharedDefaultPhoto(?string $path): bool
+    private function isSharedPicture(?string $path): bool
     {
         return is_string($path) && str_starts_with($path, 'hero-defaults/');
     }
 
     private function deleteOwnedPhoto(?string $path): void
     {
-        if (!$path || $this->isSharedDefaultPhoto($path)) {
+        if (!$path || $this->isSharedPicture($path)) {
             return;
         }
 
