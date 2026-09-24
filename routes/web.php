@@ -25,17 +25,12 @@ Route::delete('/slug-list/{id}', [SlugListController::class, 'destroy'])->name('
 // ========== HERO & DETAIL UNDANGAN ==========
 Route::get('/slug-list/{id}/edit', [HeroInvitationController::class, 'edit'])->name('slug.edit');
 Route::post('/slug/{slug_id}/hero-invitation', [HeroInvitationController::class, 'store'])->name('hero.store');
-Route::post('/slug/{slug_id}/hero-default/{type}', [HeroInvitationController::class, 'useDefaultPhoto'])->name('hero.default.use');
-Route::post('/hero-default/{type}', [HeroInvitationController::class, 'storeDefaultPhoto'])->name('hero.default.store');
+Route::post('/hero-default/{picture}', [HeroInvitationController::class, 'storeDefaultPhoto'])->name('hero.default.store');
 
 // ========== JSON IMPORT ==========
-// Homepage flow: creates slug + invitation data in one transaction.
+// JSON import only lives on the homepage and creates the invitation + slug.
 Route::post('/import-json/preview', [InvitationImportController::class, 'previewCreate'])->name('import.create.preview');
 Route::post('/import-json', [InvitationImportController::class, 'storeCreate'])->name('import.create.store');
-
-// Existing-slug flow remains available for updating an invitation from JSON.
-Route::post('/slug/{slug_id}/import-json/preview', [InvitationImportController::class, 'preview'])->name('import.preview');
-Route::post('/slug/{slug_id}/import-json', [InvitationImportController::class, 'store'])->name('import.store');
 
 // ========== ACARA ==========
 Route::get('/slug/{slug_id}/acara', [AcaraController::class, 'edit'])->name('acara.edit');
