@@ -233,7 +233,7 @@
                         </div>
 
                         <div class="alert alert-secondary">
-                            Saat import final, CMS membuat slug, menyimpan nomor pesanan ke Keterangan, mengisi data undangan, dan memasang foto default Mempelai 1/2 otomatis jika tersedia.
+                            Saat import final, CMS membuat slug, menyimpan nomor pesanan ke Keterangan, dan mengisi data undangan. Foto dipilih setelahnya dari Hero: upload sendiri, Picture 1, atau Picture 2.
                         </div>
 
                         <button type="submit" class="btn btn-primary">Buat Undangan dari JSON</button>
