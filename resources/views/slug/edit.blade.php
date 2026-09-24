@@ -26,6 +26,12 @@
         </div>
     @endif
 
+    @if(session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <ul class="nav nav-tabs" id="editTab" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="hero-tab" data-bs-toggle="tab" data-bs-target="#hero" type="button" role="tab" aria-controls="hero" aria-selected="true">
@@ -97,6 +103,7 @@
 
         <div class="tab-pane fade" id="galeri" role="tabpanel" aria-labelledby="galeri-tab">
             @include('slug.partials.galeri')
+            @include('slug.partials.galeri_delete_buttons')
         </div>
 
         <div class="tab-pane fade" id="love_story" role="tabpanel" aria-labelledby="love_story-tab">
