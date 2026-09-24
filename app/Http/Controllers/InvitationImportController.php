@@ -38,8 +38,7 @@ class InvitationImportController extends Controller
         $this->validateBanks($payload);
 
         return redirect()
-            ->route('slug.edit', $slug->id)
-            ->withFragment('json_import')
+            ->to(route('slug.edit', $slug->id) . '#json_import')
             ->with('import_preview', $this->buildPreview($payload, $theme))
             ->with('import_json', $request->input('json_payload'))
             ->with('import_theme_override', $request->input('theme_override'));
@@ -114,8 +113,7 @@ class InvitationImportController extends Controller
         });
 
         return redirect()
-            ->route('slug.edit', $slug->id)
-            ->withFragment('json_import')
+            ->to(route('slug.edit', $slug->id) . '#json_import')
             ->with('success', 'Import JSON berhasil. Data undangan sudah masuk ke database dan tetap bisa diedit manual.');
     }
 
@@ -265,13 +263,18 @@ class InvitationImportController extends Controller
 
     private function buildPreview(array $payload, ?string $theme): array
     {
-        return [
+        $preview = [
             'theme' => $theme,
             'groom' => $payload['groom'] ?? null,
             'bride' => $payload['bride'] ?? null,
             'events' => $payload['events'] ?? null,
             'love_gifts' => $payload['love_gifts'] ?? null,
-            'gift_delivery' => $payload['gift_delivery'] ?? null,
         ];
+
+        if (array_key_exists('gift_delivery', $payload)) {
+            $preview['gift_delivery'] = $payload['gift_delivery'];
+        }
+
+        return $preview;
     }
 }
