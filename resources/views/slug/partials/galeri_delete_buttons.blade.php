@@ -1,116 +1,94 @@
-<style>
-    .saved-gallery-item {
-        width: 132px;
-        margin: 6px;
-        padding: 6px;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        background: #fff;
-        text-align: center;
-    }
+@php
+    $savedCarouselAtas = !empty($galeri?->carousel_atas)
+        ? json_decode($galeri->carousel_atas, true)
+        : [];
 
-    .saved-gallery-item .galeri-preview {
-        width: 118px;
-        height: 118px;
-        margin: 0 0 6px 0 !important;
-        object-fit: cover;
-    }
+    $savedCarouselBawah = !empty($galeri?->carousel_bawah)
+        ? json_decode($galeri->carousel_bawah, true)
+        : [];
 
-    .saved-gallery-number {
-        font-size: 12px;
-        color: #6c757d;
-        margin-bottom: 6px;
-    }
-</style>
+    $savedCarouselAtas = is_array($savedCarouselAtas) ? $savedCarouselAtas : [];
+    $savedCarouselBawah = is_array($savedCarouselBawah) ? $savedCarouselBawah : [];
+@endphp
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const deleteUrl = @json(route('galeri.photo.destroy', $slug_id));
-    const csrfToken = @json(csrf_token());
+@if(count($savedCarouselAtas) || count($savedCarouselBawah))
+    <div class="card mt-3 shadow-sm">
+        <div class="card-header">
+            <h6 class="mb-0">Hapus Foto Galeri Satu per Satu</h6>
+        </div>
 
-    function storagePathFromImage(image) {
-        const src = image.getAttribute('src') || '';
-        const marker = '/storage/';
-        const markerIndex = src.indexOf(marker);
+        <div class="card-body">
+            @if(count($savedCarouselAtas))
+                <h6>Carousel Atas</h6>
 
-        if (markerIndex === -1) {
-            return null;
-        }
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    @foreach($savedCarouselAtas as $index => $img)
+                        <div class="border rounded p-2 text-center bg-white" style="width: 150px;">
+                            <img
+                                src="{{ asset('storage/' . $img) }}"
+                                alt="Carousel Atas Foto {{ $index + 1 }}"
+                                class="img-thumbnail mb-2"
+                                style="width: 130px; height: 130px; object-fit: cover;"
+                            >
 
-        const pathWithQuery = src.substring(markerIndex + marker.length);
-        const cleanPath = pathWithQuery.split('?')[0];
+                            <div class="small text-muted mb-2">
+                                Foto {{ $index + 1 }}
+                            </div>
 
-        try {
-            return decodeURIComponent(cleanPath);
-        } catch (error) {
-            return cleanPath;
-        }
-    }
+                            <form
+                                action="{{ route('galeri.photo.destroy', $slug_id) }}"
+                                method="POST"
+                                onsubmit="return confirm('Hapus Foto {{ $index + 1 }} dari Carousel Atas?');"
+                            >
+                                @csrf
+                                @method('DELETE')
+                                <input type="hidden" name="carousel" value="atas">
+                                <input type="hidden" name="image_path" value="{{ $img }}">
 
-    function addDeleteButtons(selector, carouselValue, carouselLabel) {
-        const images = Array.from(document.querySelectorAll('#galeri ' + selector));
+                                <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                    Hapus Foto Ini
+                                </button>
+                            </form>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
 
-        images.forEach(function (image, index) {
-            if (image.closest('.saved-gallery-item')) {
-                return;
-            }
+            @if(count($savedCarouselBawah))
+                <h6>Carousel Bawah</h6>
 
-            const imagePath = storagePathFromImage(image);
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach($savedCarouselBawah as $index => $img)
+                        <div class="border rounded p-2 text-center bg-white" style="width: 150px;">
+                            <img
+                                src="{{ asset('storage/' . $img) }}"
+                                alt="Carousel Bawah Foto {{ $index + 1 }}"
+                                class="img-thumbnail mb-2"
+                                style="width: 130px; height: 130px; object-fit: cover;"
+                            >
 
-            if (!imagePath) {
-                return;
-            }
+                            <div class="small text-muted mb-2">
+                                Foto {{ $index + 1 }}
+                            </div>
 
-            const wrapper = document.createElement('div');
-            wrapper.className = 'saved-gallery-item';
+                            <form
+                                action="{{ route('galeri.photo.destroy', $slug_id) }}"
+                                method="POST"
+                                onsubmit="return confirm('Hapus Foto {{ $index + 1 }} dari Carousel Bawah?');"
+                            >
+                                @csrf
+                                @method('DELETE')
+                                <input type="hidden" name="carousel" value="bawah">
+                                <input type="hidden" name="image_path" value="{{ $img }}">
 
-            image.parentNode.insertBefore(wrapper, image);
-            wrapper.appendChild(image);
-
-            const number = document.createElement('div');
-            number.className = 'saved-gallery-number';
-            number.textContent = 'Foto ' + (index + 1);
-            wrapper.appendChild(number);
-
-            const form = document.createElement('form');
-            form.action = deleteUrl;
-            form.method = 'POST';
-            form.addEventListener('submit', function (event) {
-                const confirmed = window.confirm(
-                    'Hapus Foto ' + (index + 1) + ' dari ' + carouselLabel + '?'
-                );
-
-                if (!confirmed) {
-                    event.preventDefault();
-                }
-            });
-
-            const fields = {
-                _token: csrfToken,
-                _method: 'DELETE',
-                carousel: carouselValue,
-                image_path: imagePath
-            };
-
-            Object.entries(fields).forEach(function ([name, value]) {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = name;
-                input.value = value;
-                form.appendChild(input);
-            });
-
-            const button = document.createElement('button');
-            button.type = 'submit';
-            button.className = 'btn btn-outline-danger btn-sm w-100';
-            button.textContent = 'Hapus Foto Ini';
-            form.appendChild(button);
-
-            wrapper.appendChild(form);
-        });
-    }
-
-    addDeleteButtons('img[alt="Carousel Atas"]', 'atas', 'Carousel Atas');
-    addDeleteButtons('img[alt="Carousel Bawah"]', 'bawah', 'Carousel Bawah');
-});
-</script>
+                                <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                    Hapus Foto Ini
+                                </button>
+                            </form>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    </div>
+@endif
