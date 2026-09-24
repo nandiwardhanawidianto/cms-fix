@@ -14,6 +14,7 @@ class Counting extends Model
         'nama_surat',
         'surat_arab',
         'deskripsi_surat',
+        'foto_counting',
     ];
 
     public function slug()
