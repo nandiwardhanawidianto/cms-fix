@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Counting;
 use App\Models\SlugList;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CountingController extends Controller
 {
@@ -22,21 +23,36 @@ class CountingController extends Controller
 
     public function store(Request $request, $slug_id)
     {
+        SlugList::findOrFail($slug_id);
+
         $validated = $request->validate([
             'nama_surat'      => 'required|string|max:255',
             'surat_arab'      => 'nullable|string',
             'deskripsi_surat' => 'required|string',
+            'foto_counting'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
         ]);
 
-        Counting::updateOrCreate(
-            ['slug_list_id' => $slug_id],
-            [
-                'nama_surat'      => $validated['nama_surat'],
-                'surat_arab'      => $validated['surat_arab'] ?? null,
-                'deskripsi_surat' => $validated['deskripsi_surat'],
-            ]
-        );
+        $counting = Counting::firstOrNew(['slug_list_id' => $slug_id]);
+        $counting->nama_surat = $validated['nama_surat'];
+        $counting->surat_arab = $validated['surat_arab'] ?? null;
+        $counting->deskripsi_surat = $validated['deskripsi_surat'];
 
-        return back()->with('success', 'Counting berhasil disimpan!');
+        if ($request->hasFile('foto_counting')) {
+            if ($counting->foto_counting && Storage::disk('public')->exists($counting->foto_counting)) {
+                Storage::disk('public')->delete($counting->foto_counting);
+            }
+
+            $counting->foto_counting = $request->file('foto_counting')->store(
+                'counting',
+                'public'
+            );
+        }
+
+        $counting->slug_list_id = $slug_id;
+        $counting->save();
+
+        return redirect()
+            ->to(route('slug.edit', $slug_id) . '#counting')
+            ->with('success', 'Countdown berhasil disimpan!');
     }
 }
