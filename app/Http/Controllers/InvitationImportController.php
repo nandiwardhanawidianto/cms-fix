@@ -26,6 +26,7 @@ class InvitationImportController extends Controller
         'pink',
         'biru',
         'hitam',
+        'hitam2',
         'dayak',
         'bugis',
     ];
