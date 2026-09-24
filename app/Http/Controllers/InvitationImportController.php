@@ -55,15 +55,17 @@ class InvitationImportController extends Controller
             $slug->theme = $theme;
             $slug->save();
 
-            if (array_key_exists('groom', $payload) || array_key_exists('bride', $payload)) {
+            if (array_key_exists('mempelai_1', $payload) || array_key_exists('mempelai_2', $payload)) {
                 $hero = HeroInvitation::firstOrNew(['slug_id' => $slug->id]);
 
-                if (array_key_exists('groom', $payload)) {
-                    $this->applyPerson($hero, $payload['groom'], 'pria');
+                // Kolom pria/wanita adalah nama legacy di database.
+                // Importer memperlakukannya sebagai slot urutan: mempelai 1 lalu mempelai 2.
+                if (array_key_exists('mempelai_1', $payload)) {
+                    $this->applyPerson($hero, $payload['mempelai_1'], 'pria');
                 }
 
-                if (array_key_exists('bride', $payload)) {
-                    $this->applyPerson($hero, $payload['bride'], 'wanita');
+                if (array_key_exists('mempelai_2', $payload)) {
+                    $this->applyPerson($hero, $payload['mempelai_2'], 'wanita');
                 }
 
                 $hero->slug_id = $slug->id;
@@ -138,7 +140,7 @@ class InvitationImportController extends Controller
             ]);
         }
 
-        if (!array_intersect(['groom', 'bride', 'events', 'love_gifts', 'gift_delivery'], array_keys($payload))) {
+        if (!array_intersect(['mempelai_1', 'mempelai_2', 'events', 'love_gifts', 'gift_delivery'], array_keys($payload))) {
             throw ValidationException::withMessages([
                 'json_payload' => 'JSON tidak berisi data undangan yang bisa diimpor.',
             ]);
@@ -147,15 +149,15 @@ class InvitationImportController extends Controller
         $validator = Validator::make($payload, [
             'theme' => 'nullable|string|max:50',
 
-            'groom' => 'sometimes|nullable|array',
-            'groom.full_name' => 'nullable|string|max:255',
-            'groom.short_name' => 'nullable|string|max:255',
-            'groom.parents' => 'nullable|string|max:255',
+            'mempelai_1' => 'sometimes|nullable|array',
+            'mempelai_1.full_name' => 'nullable|string|max:255',
+            'mempelai_1.short_name' => 'nullable|string|max:255',
+            'mempelai_1.parents' => 'nullable|string|max:255',
 
-            'bride' => 'sometimes|nullable|array',
-            'bride.full_name' => 'nullable|string|max:255',
-            'bride.short_name' => 'nullable|string|max:255',
-            'bride.parents' => 'nullable|string|max:255',
+            'mempelai_2' => 'sometimes|nullable|array',
+            'mempelai_2.full_name' => 'nullable|string|max:255',
+            'mempelai_2.short_name' => 'nullable|string|max:255',
+            'mempelai_2.parents' => 'nullable|string|max:255',
 
             'events' => 'sometimes|array|max:3',
             'events.*.name' => 'required|string|max:255',
@@ -265,8 +267,8 @@ class InvitationImportController extends Controller
     {
         $preview = [
             'theme' => $theme,
-            'groom' => $payload['groom'] ?? null,
-            'bride' => $payload['bride'] ?? null,
+            'mempelai_1' => $payload['mempelai_1'] ?? null,
+            'mempelai_2' => $payload['mempelai_2'] ?? null,
             'events' => $payload['events'] ?? null,
             'love_gifts' => $payload['love_gifts'] ?? null,
         ];
