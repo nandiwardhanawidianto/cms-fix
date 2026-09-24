@@ -89,12 +89,19 @@ class HeroInvitationController extends Controller
             }
         }
 
+        $this->syncAutomaticDefaultPhoto($heroInvitation, 'pria');
+        $this->syncAutomaticDefaultPhoto($heroInvitation, 'wanita');
+
         $heroInvitation->slug_id = $slug_id;
         $heroInvitation->save();
 
         return back()->with('success', 'Hero & Invitation berhasil disimpan!');
     }
 
+    /**
+     * Kept for backwards compatibility with older UI links.
+     * New workflow applies defaults automatically.
+     */
     public function useDefaultPhoto($slug_id, string $type)
     {
         $this->validatePhotoType($type);
@@ -146,12 +153,30 @@ class HeroInvitationController extends Controller
         }
 
         $column = $type === 'pria' ? 'foto_pria' : 'foto_wanita';
+        $fullNameColumn = $type === 'pria' ? 'nama_lengkap_pria' : 'nama_lengkap_wanita';
+        $shortNameColumn = $type === 'pria' ? 'nama_panggilan_pria' : 'nama_panggilan_wanita';
 
-        if ($oldPaths) {
-            HeroInvitation::whereIn($column, $oldPaths)->update([
-                $column => $newPath,
-            ]);
-        }
+        HeroInvitation::where(function ($query) use ($column, $fullNameColumn, $shortNameColumn, $oldPaths) {
+            if ($oldPaths) {
+                $query->whereIn($column, $oldPaths)
+                    ->orWhere(function ($emptyPhoto) use ($column, $fullNameColumn, $shortNameColumn) {
+                        $emptyPhoto->whereNull($column)
+                            ->where(function ($person) use ($fullNameColumn, $shortNameColumn) {
+                                $person->whereNotNull($fullNameColumn)
+                                    ->orWhereNotNull($shortNameColumn);
+                            });
+                    });
+                return;
+            }
+
+            $query->whereNull($column)
+                ->where(function ($person) use ($fullNameColumn, $shortNameColumn) {
+                    $person->whereNotNull($fullNameColumn)
+                        ->orWhereNotNull($shortNameColumn);
+                });
+        })->update([
+            $column => $newPath,
+        ]);
 
         foreach ($oldPaths as $oldPath) {
             if ($oldPath !== $newPath && $disk->exists($oldPath)) {
@@ -159,10 +184,12 @@ class HeroInvitationController extends Controller
             }
         }
 
-        return back()->with(
-            'success',
-            'Foto default ' . ($type === 'pria' ? 'pria' : 'wanita') . ' berhasil disimpan. Undangan yang memakai default ikut mengarah ke file baru.'
-        );
+        return redirect()
+            ->to(route('slug.index') . '#default-photos')
+            ->with(
+                'success',
+                'Foto default ' . ($type === 'pria' ? 'Mempelai 1' : 'Mempelai 2') . ' berhasil disimpan. Undangan tanpa foto custom otomatis memakai default ini.'
+            );
     }
 
     private function saveCroppedImage($base64Image, $jenis)
@@ -207,6 +234,28 @@ class HeroInvitationController extends Controller
             ->filter(fn (string $path) => str_starts_with(basename($path), $type . '.'))
             ->values()
             ->all();
+    }
+
+    private function syncAutomaticDefaultPhoto(HeroInvitation $heroInvitation, string $type): void
+    {
+        $photoColumn = $type === 'pria' ? 'foto_pria' : 'foto_wanita';
+        $fullNameColumn = $type === 'pria' ? 'nama_lengkap_pria' : 'nama_lengkap_wanita';
+        $shortNameColumn = $type === 'pria' ? 'nama_panggilan_pria' : 'nama_panggilan_wanita';
+        $hasPerson = filled($heroInvitation->{$fullNameColumn}) || filled($heroInvitation->{$shortNameColumn});
+
+        if (!$hasPerson) {
+            if ($this->isSharedDefaultPhoto($heroInvitation->{$photoColumn})) {
+                $heroInvitation->{$photoColumn} = null;
+            }
+            return;
+        }
+
+        if (!filled($heroInvitation->{$photoColumn})) {
+            $defaultPath = $this->findDefaultPhoto($type);
+            if ($defaultPath) {
+                $heroInvitation->{$photoColumn} = $defaultPath;
+            }
+        }
     }
 
     private function isSharedDefaultPhoto(?string $path): bool
