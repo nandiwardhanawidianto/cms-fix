@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Storage;
 
 class SlugListController extends Controller
 {
-    // Tampilkan halaman slug list
     public function index(Request $request)
     {
         $query = SlugList::query();
@@ -21,17 +20,16 @@ class SlugListController extends Controller
         }
 
         $slugs = $query->orderBy('id', 'desc')->get();
-        $defaultFotoMempelai1 = $this->findDefaultPhoto('pria');
-        $defaultFotoMempelai2 = $this->findDefaultPhoto('wanita');
+        $picture1Path = $this->findGlobalPicture('picture1');
+        $picture2Path = $this->findGlobalPicture('picture2');
 
         return view('slug.index', compact(
             'slugs',
-            'defaultFotoMempelai1',
-            'defaultFotoMempelai2'
+            'picture1Path',
+            'picture2Path'
         ));
     }
 
-    // Simpan slug baru
     public function store(Request $request)
     {
         $request->validate([
@@ -49,7 +47,6 @@ class SlugListController extends Controller
         return redirect()->route('slug.index')->with('success', 'Slug berhasil ditambahkan!');
     }
 
-    // Hapus slug
     public function destroy($id)
     {
         $slug = SlugList::findOrFail($id);
@@ -83,9 +80,18 @@ class SlugListController extends Controller
         return redirect()->route('slug.index')->with('success', 'Slug berhasil diperbarui!');
     }
 
-    private function findDefaultPhoto(string $type): ?string
+    private function findGlobalPicture(string $picture): ?string
     {
+        $legacyName = $picture === 'picture1' ? 'pria' : 'wanita';
+
         return collect(Storage::disk('public')->files('hero-defaults'))
-            ->first(fn (string $path) => str_starts_with(basename($path), $type . '.'));
+            ->filter(function (string $path) use ($picture, $legacyName) {
+                $base = basename($path);
+
+                return str_starts_with($base, $picture . '.')
+                    || str_starts_with($base, $legacyName . '.');
+            })
+            ->sortBy(fn (string $path) => str_starts_with(basename($path), $picture . '.') ? 0 : 1)
+            ->first();
     }
 }
