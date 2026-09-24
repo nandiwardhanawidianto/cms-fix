@@ -6,7 +6,7 @@
 
     <div class="card-body">
         <div class="alert alert-info">
-            JSON hanya dipakai sebagai jalan cepat untuk input awal. Setelah berhasil diimpor, database menjadi sumber data utama dan semua bagian tetap bisa diedit manual seperti biasa.
+            JSON hanya dipakai sebagai jalan cepat untuk input awal. Urutan mempelai mengikuti urutan form customer: data pertama menjadi Mempelai 1, data kedua menjadi Mempelai 2. Tidak ada penentuan gender di JSON.
         </div>
 
         @if($errors->has('json_payload') || $errors->has('theme_override'))
@@ -72,15 +72,15 @@
             <summary class="fw-semibold">Lihat format JSON yang didukung</summary>
             <pre class="bg-dark text-light rounded p-3 mt-3 mb-0" style="white-space: pre-wrap;">{
   "theme": null,
-  "groom": {
-    "full_name": "Avensus Mariono Pardede",
-    "short_name": "Aven",
-    "parents": "Putra ke 2 dari Bapak Sahat Pardede & Ibu Morlince Purba"
+  "mempelai_1": {
+    "full_name": "Nandi Wardana",
+    "short_name": "Nandi",
+    "parents": "Anak ke 2 dari Bapak ... & Ibu ..."
   },
-  "bride": {
-    "full_name": "Angel Poibe Siahaan",
-    "short_name": "Poibe",
-    "parents": "Putri ke 4 dari Bapak Perodi Siahaan & Ibu Rostinim Sihombing"
+  "mempelai_2": {
+    "full_name": "Nama lengkap mempelai kedua",
+    "short_name": "Nama pendek",
+    "parents": "Anak ke 1 dari Bapak ... & Ibu ..."
   },
   "events": [
     {
@@ -89,26 +89,19 @@
       "time": "08:00 - selesai",
       "address": "Jalan Pemandian Sosor Parribuan",
       "maps": null
-    },
-    {
-      "name": "Adat",
-      "date": "2026-10-01",
-      "time": "12:00 - selesai",
-      "address": "Jalan Pemandian Sosor Parribuan",
-      "maps": null
     }
   ],
   "love_gifts": [
     {
       "bank": "BRI",
       "account_number": "031401022091531",
-      "account_name": "Avensus Mariono Pardede"
+      "account_name": "Nandi Wardana"
     }
   ],
   "gift_delivery": {
-    "recipient_name": "Avensus Mariono Pardede",
-    "phone": "081375555160",
-    "address": "Jalan Pemandian Sosor Parribuan"
+    "recipient_name": "Nandi Wardana",
+    "phone": "081234567890",
+    "address": "Alamat kirim kado"
   }
 }</pre>
         </details>
@@ -135,17 +128,17 @@
 
                 <div class="col-md-4">
                     <div class="border rounded p-3 h-100">
-                        <div class="text-muted small">Mempelai Pria</div>
-                        <strong>{{ data_get($preview, 'groom.full_name', '-') ?? '-' }}</strong>
-                        <div>{{ data_get($preview, 'groom.short_name', '') }}</div>
+                        <div class="text-muted small">Mempelai 1</div>
+                        <strong>{{ data_get($preview, 'mempelai_1.full_name', '-') ?? '-' }}</strong>
+                        <div>{{ data_get($preview, 'mempelai_1.short_name', '') }}</div>
                     </div>
                 </div>
 
                 <div class="col-md-4">
                     <div class="border rounded p-3 h-100">
-                        <div class="text-muted small">Mempelai Wanita</div>
-                        <strong>{{ data_get($preview, 'bride.full_name', '-') ?? '-' }}</strong>
-                        <div>{{ data_get($preview, 'bride.short_name', '') }}</div>
+                        <div class="text-muted small">Mempelai 2 <span class="text-muted">(opsional)</span></div>
+                        <strong>{{ data_get($preview, 'mempelai_2.full_name', '-') ?? '-' }}</strong>
+                        <div>{{ data_get($preview, 'mempelai_2.short_name', '') }}</div>
                     </div>
                 </div>
             </div>
