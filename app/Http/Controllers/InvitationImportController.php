@@ -87,6 +87,51 @@ class InvitationImportController extends Controller
             );
     }
 
+    /**
+     * Jalur publish dari antrean review; semua validasi dan mapping tetap
+     * menggunakan importer CMS yang sama seperti import JSON manual.
+     * Tidak boleh dipanggil dari endpoint publik.
+     */
+    public function publishReviewed(
+        array $rawPayload,
+        string $themeOverride,
+        string $invitationName,
+        ?string $requestedSlug,
+        string $displayOrder = 'female_first'
+    ): SlugList {
+        $request = Request::create('/import-json', 'POST', [
+            'json_payload' => json_encode($rawPayload, JSON_THROW_ON_ERROR),
+            'theme_override' => $themeOverride,
+        ]);
+        $payload = $this->validatedPayload($request);
+        $theme = $this->resolveTheme($payload, $themeOverride, true);
+        $bankMap = $this->validateBanks($payload);
+
+        if (SlugList::where('keterangan', $payload['order_number'])->exists()) {
+            throw ValidationException::withMessages([
+                'json_payload' => 'Nomor pesanan ini sudah memiliki undangan di CMS. Jangan membuat duplikat.',
+            ]);
+        }
+
+        $name = trim($invitationName);
+        $slugText = trim($requestedSlug ?: Str::slug($name));
+        if ($name === '' || $slugText === '' || !preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $slugText)) {
+            throw ValidationException::withMessages(['invitation_slug' => 'Nama atau slug tidak valid.']);
+        }
+        if (SlugList::where('slug', $slugText)->exists()) {
+            throw ValidationException::withMessages(['invitation_slug' => 'Slug sudah digunakan. Pilih yang lain.']);
+        }
+
+        $slug = SlugList::create([
+            'nama' => $name,
+            'slug' => $slugText,
+            'keterangan' => $payload['order_number'],
+            'theme' => $theme,
+        ]);
+        $this->applyPayloadToSlug($slug, $payload, $theme, $bankMap, $displayOrder);
+        return $slug;
+    }
+
     private function validatedPayload(Request $request): array
     {
         $request->validate([
@@ -226,7 +271,7 @@ class InvitationImportController extends Controller
         return $bankMap;
     }
 
-    private function applyPayloadToSlug(SlugList $slug, array $payload, string $theme, array $bankMap): void
+    private function applyPayloadToSlug(SlugList $slug, array $payload, string $theme, array $bankMap, string $displayOrder = 'male_first'): void
     {
         $slug->theme = $theme;
         $slug->keterangan = trim($payload['order_number']);
@@ -234,10 +279,12 @@ class InvitationImportController extends Controller
 
         $hero = HeroInvitation::firstOrNew(['slug_id' => $slug->id]);
 
-        $this->applyPerson($hero, $payload['mempelai_1'], 'pria');
+        $firstRole = $displayOrder === 'female_first' ? 'wanita' : 'pria';
+        $secondRole = $displayOrder === 'female_first' ? 'pria' : 'wanita';
+        $this->applyPerson($hero, $payload['mempelai_1'], $firstRole);
 
         if (array_key_exists('mempelai_2', $payload)) {
-            $this->applyPerson($hero, $payload['mempelai_2'], 'wanita');
+            $this->applyPerson($hero, $payload['mempelai_2'], $secondRole);
         }
 
         $hero->slug_id = $slug->id;
