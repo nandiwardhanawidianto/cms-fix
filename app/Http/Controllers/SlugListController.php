@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\SlugList;
+use App\Models\FormSubmission;
 use Illuminate\Support\Facades\Storage;
 
 class SlugListController extends Controller
@@ -20,13 +21,15 @@ class SlugListController extends Controller
         }
 
         $slugs = $query->orderBy('id', 'desc')->get();
+        $pendingFormCount = FormSubmission::whereIn('status', ['pending_review', 'in_review'])->count();
         $picture1Path = $this->findGlobalPicture('picture1');
         $picture2Path = $this->findGlobalPicture('picture2');
 
         return view('slug.index', compact(
             'slugs',
             'picture1Path',
-            'picture2Path'
+            'picture2Path',
+            'pendingFormCount'
         ));
     }
 
