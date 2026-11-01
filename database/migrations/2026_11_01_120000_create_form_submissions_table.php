@@ -16,6 +16,7 @@ return new class extends Migration {
             $table->string('photo_package', 20)->nullable();
             $table->unsignedTinyInteger('photo_count')->default(0);
             $table->json('payload');
+            $table->json('raw_form')->nullable();
             $table->string('status', 30)->default('pending_review');
             $table->unsignedBigInteger('published_slug_id')->nullable();
             $table->timestamp('published_at')->nullable();

@@ -2,7 +2,7 @@
 
 ## Alur
 1. Form Undangan Laravel menyimpan pesanan digital, kemudian POST JSON dari backend ke `/api/form-submissions` menggunakan header `X-CMS-Integration-Token`.
-2. CMS mencatat satu `form_submissions` per nomor Shopee dengan status `pending_review`. Pengiriman ulang sebelum publish memperbarui record yang sama.
+2. CMS menyimpan `payload` siap impor dan `raw_form` berisi data asli (termasuk isian parsial yang belum masuk format importer), lalu mencatat satu `form_submissions` per nomor Shopee dengan status `pending_review`. Pengiriman ulang sebelum publish memperbarui record yang sama.
 3. Tautan **Form Menunggu Review** di halaman utama CMS mengarah ke `/form-submissions`. Area ini memakai password admin review terpisah.
 4. Admin memeriksa dan dapat mengedit JSON, memilih nama undangan, slug, dan tema. Menekan **Simpan Review Saja** tidak membuat undangan publik.
 5. **Publish Undangan** adalah satu-satunya tindakan dalam integrasi baru yang memanggil importer dan membuat SlugList + data hero/acara/love gift/kirim kado; setelah itu status menjadi `published`. Klik publish dua kali diblokir.

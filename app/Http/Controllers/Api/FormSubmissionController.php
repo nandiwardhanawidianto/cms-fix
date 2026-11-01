@@ -29,6 +29,7 @@ class FormSubmissionController extends Controller
             'photo_count' => ['required', 'integer', 'between:0,10'],
             // Data tidak lengkap tetap boleh masuk antrean review.
             'payload' => ['required', 'array'],
+            'raw_form' => ['nullable', 'array'],
             'payload.order_number' => ['required', 'string', 'max:80'],
             'payload.mempelai_1' => ['nullable', 'array'],
             'payload.mempelai_2' => ['nullable', 'array'],
@@ -59,6 +60,7 @@ class FormSubmissionController extends Controller
                 'photo_package' => $data['photo_package'] ?? null,
                 'photo_count' => $data['photo_count'],
                 'payload' => $data['payload'],
+                'raw_form' => $data['raw_form'] ?? null,
                 'status' => 'pending_review',
             ])->save();
 

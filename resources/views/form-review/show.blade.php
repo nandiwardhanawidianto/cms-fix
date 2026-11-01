@@ -28,6 +28,10 @@
 <option value="">Pilih Tema</option>
 @foreach($themes as $theme)<option value="{{ $theme }}" @selected(old('theme', data_get($submission->payload, 'theme')) === $theme)>{{ ucfirst($theme) }}</option>@endforeach
 </select></div>
+<div class="col-md-12"><label class="form-label">Data Asli Pelanggan (hanya untuk referensi admin)</label>
+<p class="text-muted small">Memuat isian yang belum lengkap serta data tambahan yang belum didukung impor CMS. Tidak dipublikasikan otomatis.</p>
+<textarea class="form-control font-monospace" rows="10" readonly>{{ json_encode($submission->raw_form ?? [], JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) }}</textarea>
+</div>
 <div class="col-md-12"><label class="form-label">JSON Undangan (bisa diedit sebelum publish)</label>
 <textarea class="form-control font-monospace" rows="20" name="json_payload" spellcheck="false" required>{{ old('json_payload', json_encode($submission->payload, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)) }}</textarea>
 </div></div>

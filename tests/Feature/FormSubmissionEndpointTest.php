@@ -50,6 +50,7 @@ class FormSubmissionEndpointTest extends TestCase
             'display_order' => 'female_first',
             'photo_package' => 'no_photo',
             'photo_count' => 0,
+            'raw_form' => ['love_gift' => [['bank' => 'BCA', 'account_number' => '1234', 'account_name' => '']], 'turut_mengundang' => ['Bapak A']],
             'payload' => [
                 'order_number' => '261101XYZABC',
                 'theme' => null,
@@ -76,6 +77,7 @@ class FormSubmissionEndpointTest extends TestCase
             ->assertJsonPath('status', 'pending_review');
 
         $this->assertDatabaseCount('form_submissions', 1);
+        $this->assertSame('Bapak A', FormSubmission::firstOrFail()->raw_form['turut_mengundang'][0]);
         $this->assertDatabaseHas('form_submissions', [
             'order_number' => '261101XYZABC',
             'status' => 'pending_review',
