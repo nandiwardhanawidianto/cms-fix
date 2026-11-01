@@ -2,6 +2,8 @@ name: Check CMS Form Review Integration
 
 on:
   push:
+    branches: [main, feature/form-undangan-review-queue]
+  pull_request:
     branches: [main]
   workflow_dispatch:
 
@@ -15,9 +17,14 @@ jobs:
           php-version: '8.3'
           coverage: none
       - name: PHP syntax
-        run: find app routes config database -name '*.php' -print0 | xargs -0 -n1 php -l
-      - name: Blade syntax via Laravel
+        run: find app routes config database tests -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Install Laravel
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Prepare application
         run: |
-          composer install --no-interaction --prefer-dist --no-progress
+          cp .env.example .env
+          php artisan key:generate
           php artisan route:list
           php artisan view:cache
+      - name: Test Form Undangan API contract
+        run: php artisan test --filter=FormSubmissionEndpointTest
