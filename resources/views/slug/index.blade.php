@@ -12,7 +12,6 @@
     <h2 class="mb-4 text-center">📌 Management Undangan</h2>
 
     <div class="d-flex flex-wrap gap-2 mb-4">
-        <a href="{{ route('form-review.index') }}" class="btn btn-warning">Form Menunggu Review ({{ $pendingFormCount }})</a>
         <a href="{{ route('banks.index') }}" class="btn btn-success">🏦 Master Bank CMS</a>
         <a href="{{ route('song.index') }}" class="btn btn-success">🎵 Master Lagu</a>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#jsonCreateModal">

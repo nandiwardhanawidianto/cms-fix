@@ -7,9 +7,6 @@ use App\Http\Controllers\Api\GuestMessageController;
 use App\Http\Controllers\Api\KirimKadoController;
 use App\Http\Controllers\HeroInvitationController;
 
-// Terima pengajuan DIGITAL dari Form Undangan saja (token server-ke-server, status tetap pending_review).
-Route::post('/form-submissions', [\App\Http\Controllers\Api\FormSubmissionController::class, 'store'])->middleware('throttle:20,1');
-
 // API Routes
 Route::get('slug/{slug}/listapi', [HeroInvitationApiController::class, 'listapi']);
 

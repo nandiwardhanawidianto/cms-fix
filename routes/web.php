@@ -16,14 +16,6 @@ use App\Http\Controllers\{
     InvitationImportController
 };
 
-// ========== ANTREAN REVIEW FORM UNDANGAN ==========
-Route::get('/form-submissions', [\App\Http\Controllers\FormReviewController::class, 'index'])->name('form-review.index');
-Route::post('/form-submissions/login', [\App\Http\Controllers\FormReviewController::class, 'login'])->middleware('throttle:5,1')->name('form-review.login');
-Route::post('/form-submissions/logout', [\App\Http\Controllers\FormReviewController::class, 'logout'])->name('form-review.logout');
-Route::get('/form-submissions/{submission}', [\App\Http\Controllers\FormReviewController::class, 'show'])->name('form-review.show');
-Route::post('/form-submissions/{submission}/save', [\App\Http\Controllers\FormReviewController::class, 'save'])->name('form-review.save');
-Route::post('/form-submissions/{submission}/publish', [\App\Http\Controllers\FormReviewController::class, 'publish'])->middleware('throttle:10,1')->name('form-review.publish');
-
 // ========== SLUG MANAGEMENT ==========
 Route::get('/', [SlugListController::class, 'index'])->name('slug.index');
 Route::post('/slug-list', [SlugListController::class, 'store'])->name('slug.store');
