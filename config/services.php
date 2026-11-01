@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'form_undangan' => [
+        'integration_token' => env('FORM_UNDANGAN_INTEGRATION_TOKEN', ''),
+        'review_password' => env('CMS_REVIEW_PASSWORD', ''),
+    ],
 
     /*
     |--------------------------------------------------------------------------
