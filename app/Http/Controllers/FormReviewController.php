@@ -31,9 +31,9 @@ class FormReviewController extends Controller
         }
 
         return view('form-review.index', [
-            'submissions' => FormSubmission::orderByRaw("CASE WHEN status = 'pending_review' THEN 0 ELSE 1 END")
+            'submissions' => FormSubmission::orderByRaw("CASE WHEN status IN ('pending_review','in_review') THEN 0 ELSE 1 END")
                 ->orderByDesc('updated_at')->paginate(25),
-            'pendingCount' => FormSubmission::where('status', 'pending_review')->count(),
+            'pendingCount' => FormSubmission::whereIn('status', ['pending_review', 'in_review'])->count(),
         ]);
     }
 
@@ -92,9 +92,9 @@ class FormReviewController extends Controller
     public function save(Request $request, FormSubmission $submission)
     {
         $this->guard($request);
-        abort_unless($submission->status === 'pending_review', 409);
+        abort_unless(in_array($submission->status, ['pending_review', 'in_review'], true), 409);
         [$data, $payload] = $this->parseReview($request, $submission);
-        $submission->update(['payload' => $payload]);
+        $submission->update(['payload' => $payload, 'status' => 'in_review']);
         return redirect()->route('form-review.show', $submission)->with('success', 'Perubahan JSON disimpan. Undangan belum diterbitkan.');
     }
 
@@ -106,7 +106,7 @@ class FormReviewController extends Controller
 
         $slug = DB::transaction(function () use ($submission, $data, $payload, $importer) {
             $locked = FormSubmission::whereKey($submission->id)->lockForUpdate()->firstOrFail();
-            abort_unless($locked->status === 'pending_review', 409, 'Pesanan sudah dipublikasikan.');
+            abort_unless(in_array($locked->status, ['pending_review', 'in_review'], true), 409, 'Pesanan sudah dipublikasikan.');
             $slug = $importer->publishReviewed(
                 $payload,
                 $data['theme'],

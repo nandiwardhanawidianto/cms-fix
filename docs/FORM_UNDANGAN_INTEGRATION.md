@@ -24,3 +24,6 @@ Isi token acak minimal 32 karakter dan password review minimal 12 karakter. Toke
 **Batas kelengkapan:** Antrean menerima data belum lengkap. Publish memakai validasi impor JSON CMS (termasuk nama pendek, tanggal, alamat, Master Bank, dan tema); kesalahan akan ditampilkan dan harus diperbaiki sebelum publikasi.
 
 **Pemetaan urutan mempelai:** Form mengirim `display_order` di metadata permintaan; importer manual lama tetap menggunakan urutan lama, sedangkan antrean Form mengatur pria/wanita sesuai pilihan pengguna.
+
+## Perlindungan dari penimpaan review
+Ketika admin menekan **Simpan Review Saja**, status pengajuan berubah menjadi `in_review` dan isinya dikunci dari pengiriman ulang otomatis. Permintaan API berikutnya untuk nomor pesanan yang sama dibalas HTTP 409 agar perubahan pelanggan tidak menimpa edit admin. Admin tetap dapat memperbarui JSON secara manual dan Publish. Jumlah notifikasi CMS mencakup `pending_review` dan `in_review`.

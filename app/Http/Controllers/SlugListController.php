@@ -21,7 +21,7 @@ class SlugListController extends Controller
         }
 
         $slugs = $query->orderBy('id', 'desc')->get();
-        $pendingFormCount = FormSubmission::where('status', 'pending_review')->count();
+        $pendingFormCount = FormSubmission::whereIn('status', ['pending_review', 'in_review'])->count();
         $picture1Path = $this->findGlobalPicture('picture1');
         $picture2Path = $this->findGlobalPicture('picture2');
 

@@ -14,7 +14,7 @@
 @if($submission->published_slug_id)<a href="{{ route('slug.edit', $submission->published_slug_id) }}">Buka CMS</a>@endif
 </div>
 @else
-<div class="alert alert-warning">Status: <strong>Menunggu Review</strong>. Simpan hanya mengubah data review. Publish membuat slug dan data undangan yang dapat diakses publik.</div>
+<div class="alert alert-warning">Status: <strong>{{ $submission->status === 'in_review' ? 'Sedang Direview' : 'Menunggu Review' }}</strong>. Simpan hanya mengubah data review. Publish membuat slug dan data undangan yang dapat diakses publik.</div>
 <form method="POST" id="review-form">@csrf
 <div class="row g-3">
 <div class="col-md-6"><label class="form-label">Nama Undangan</label>

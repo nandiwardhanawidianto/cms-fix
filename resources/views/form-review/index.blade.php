@@ -12,7 +12,7 @@
 <div class="card"><div class="table-responsive"><table class="table table-striped mb-0">
 <thead><tr><th>No. Pesanan</th><th>Status</th><th>WhatsApp</th><th>Foto</th><th>Diperbarui</th><th>Aksi</th></tr></thead>
 <tbody>@forelse($submissions as $row)<tr>
-<td>{{ $row->order_number }}</td><td>{{ $row->status === 'pending_review' ? 'Menunggu Review' : 'Sudah Diterbitkan' }}</td>
+<td>{{ $row->order_number }}</td><td>{{ $row->status === 'published' ? 'Sudah Diterbitkan' : ($row->status === 'in_review' ? 'Sedang Direview' : 'Menunggu Review') }}</td>
 <td>{{ $row->customer_whatsapp }}</td><td>{{ $row->photo_count }} (belum ditransfer)</td>
 <td>{{ $row->updated_at?->format('d M Y H:i') }}</td>
 <td><a href="{{ route('form-review.show', $row) }}" class="btn btn-sm btn-primary">Periksa</a></td>

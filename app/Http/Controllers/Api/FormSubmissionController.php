@@ -44,10 +44,10 @@ class FormSubmissionController extends Controller
             $submission = FormSubmission::where('order_number', $data['order_number'])
                 ->lockForUpdate()->first();
 
-            if ($submission && $submission->status === 'published') {
+            if ($submission && in_array($submission->status, ['published', 'in_review'], true)) {
                 return response()->json([
-                    'status' => 'already_published',
-                    'message' => 'Pesanan telah dipublikasikan; perubahan harus ditinjau manual.',
+                    'status' => 'review_locked',
+                    'message' => 'Pesanan sedang ditinjau admin atau sudah dipublikasikan; pengiriman ulang tidak boleh menimpa data review.',
                 ], 409);
             }
 
